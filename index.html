@@ -2100,15 +2100,19 @@
 
     function enterApp() {
       closeAuth();
-      document.getElementById('landing').classList.add('hide');
-      setTimeout(() => document.getElementById('app').classList.add('show'), 300);
+
+      const landing = document.getElementById('landing');
+      const app = document.getElementById('app');
+
+      // CRÍTICO: o app precisa estar visível ANTES de medir o canvas.
+      // Se initCanvas() roda com #app display:none, getBoundingClientRect() retorna 0x0
+      // e o tapete nunca aparece até um resize manual do navegador.
+      landing.classList.add('hide');
+      app.classList.add('show');
 
       // topbar user info
       const name = currentProfile?.name || currentUser.email.split('@')[0];
 
-      // welcome toast
-      setTimeout(() => showWelcome(name), 450);
-      setTimeout(() => toast(`🦈 Seja bem-vindo, ${name}!`), 700);
       const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
       document.getElementById('user-avatar-initials').textContent = initials;
       document.getElementById('user-name-top').textContent = name;
@@ -2127,6 +2131,16 @@
       document.getElementById('hud-readonly').classList.toggle('show', !isProgrammer);
 
       initCanvas();
+
+      // Força redesenho em múltiplos momentos para cobrir transição CSS, Vercel e mobile.
+      requestAnimationFrame(() => { resize(); draw(); });
+      setTimeout(() => { resize(); draw(); }, 80);
+      setTimeout(() => { resize(); draw(); }, 350);
+
+      // welcome display
+      setTimeout(() => showWelcome(name), 220);
+      setTimeout(() => toast(`🦈 Seja bem-vindo, ${name}!`), 550);
+
       loadMissions();
       logActivity('login', null, null, {});
     }
@@ -2210,13 +2224,19 @@
 
       // Carrega o tapete real salvo na raiz do projeto.
       matImg = new Image();
-      matImg.src = 'tapete.png';
-      matImg.onload = () => draw();
-      matImg.onerror = () => {
-        matImg = null;
-        toast('tapete.png não encontrado na raiz do projeto', true);
+      matImg.onload = () => {
+        console.log('✅ tapete.png carregado:', matImg.naturalWidth, matImg.naturalHeight);
+        resize();
         draw();
       };
+      matImg.onerror = () => {
+        console.error('❌ tapete.png não encontrado. Ele precisa estar na mesma pasta do index.html.');
+        matImg = null;
+        toast('Erro: tapete.png não encontrado na raiz do projeto', true);
+        resize();
+        draw();
+      };
+      matImg.src = './tapete.png';
 
       resize();
       window.removeEventListener('resize', resize);
@@ -2236,10 +2256,22 @@
     function resize() {
       if (!canvas || !wrap) return;
       const r = wrap.getBoundingClientRect();
-      canvas.width = r.width; canvas.height = r.height;
-      scale = Math.min(r.width / FLL_W, r.height / FLL_H) * 0.88;
-      offX = (r.width - FLL_W * scale) / 2;
-      offY = (r.height - FLL_H * scale) / 2;
+
+      // Se o app ainda estiver invisível/transicionando, o canvas mede 0x0.
+      // Reagenda o cálculo para evitar tela preta sem tapete.
+      if (r.width < 20 || r.height < 20) {
+        console.warn('Canvas ainda sem tamanho. Tentando redimensionar novamente...', r.width, r.height);
+        setTimeout(resize, 80);
+        return;
+      }
+
+      canvas.width = Math.floor(r.width);
+      canvas.height = Math.floor(r.height);
+
+      scale = Math.min(canvas.width / FLL_W, canvas.height / FLL_H) * 0.92;
+      offX = (canvas.width - FLL_W * scale) / 2;
+      offY = (canvas.height - FLL_H * scale) / 2;
+
       draw();
     }
 
@@ -2249,6 +2281,7 @@
     function draw() {
       if (!canvas || !ctx) return;
       const W = FLL_W * scale, H = FLL_H * scale;
+      if (!Number.isFinite(W) || !Number.isFinite(H) || W <= 0 || H <= 0) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // background
@@ -2259,16 +2292,22 @@
 
       // tapete image or fallback
       if (matImg && matImg.complete && matImg.naturalWidth > 0) {
-        ctx.globalAlpha = 0.98;
+        ctx.globalAlpha = 1;
         ctx.drawImage(matImg, 0, 0, W, H);
         ctx.globalAlpha = 1;
       } else {
-        ctx.fillStyle = '#0c0820';
-        ctx.beginPath(); ctx.roundRect(0, 0, W, H, 4); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.fillStyle = '#111827';
+        ctx.font = '18px JetBrains Mono, monospace';
+        ctx.fillText('tapete.png não encontrado ou ainda carregando', 28, 42);
+        ctx.font = '13px JetBrains Mono, monospace';
+        ctx.fillText('Coloque tapete.png na mesma pasta do index.html e faça commit/deploy.', 28, 68);
       }
 
-      // dark overlay for contrast
-      ctx.fillStyle = 'rgba(8,4,15,0.08)';
+      // leve overlay para manter pontos/grade visíveis sem esconder o tapete
+      ctx.fillStyle = 'rgba(255,255,255,0.00)';
       ctx.fillRect(0, 0, W, H);
 
       // grid lines
