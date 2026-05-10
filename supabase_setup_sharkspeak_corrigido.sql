@@ -53,6 +53,7 @@ alter table public.activity_logs enable row level security;
 -- Limpar políticas antigas se existirem
 drop policy if exists "profiles_select"        on public.profiles;
 drop policy if exists "profiles_update_own"    on public.profiles;
+drop policy if exists "profiles_update_admin"  on public.profiles;
 drop policy if exists "missions_select"        on public.missions;
 drop policy if exists "missions_insert"        on public.missions;
 drop policy if exists "missions_update"        on public.missions;
@@ -68,6 +69,22 @@ create policy "profiles_select"
 create policy "profiles_update_own"
   on public.profiles for update
   using (auth.uid() = id);
+
+-- Admin: pode atualizar funções e dados de qualquer perfil pelo painel
+create policy "profiles_update_admin"
+  on public.profiles for update
+  using (
+    exists (
+      select 1 from public.profiles
+      where id = auth.uid() and role = 'admin'
+    )
+  )
+  with check (
+    exists (
+      select 1 from public.profiles
+      where id = auth.uid() and role = 'admin'
+    )
+  );
 
 -- Missions: todos leem
 create policy "missions_select"

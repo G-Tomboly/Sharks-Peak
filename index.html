@@ -1421,6 +1421,67 @@
       margin-top: 2px;
     }
 
+
+    /* CANVAS INTERACTION */
+    #mat-canvas {
+      cursor: crosshair;
+      touch-action: none;
+      user-select: none;
+    }
+
+    /* WELCOME DISPLAY */
+    #welcome-banner {
+      position: absolute;
+      top: 62px;
+      left: 50%;
+      transform: translate(-50%, -10px) scale(.98);
+      z-index: 40;
+      min-width: min(520px, calc(100vw - 32px));
+      padding: 14px 18px;
+      border-radius: var(--r2);
+      background: linear-gradient(135deg, rgba(124, 58, 237, .88), rgba(249, 115, 22, .88));
+      border: 1px solid rgba(255, 255, 255, .18);
+      box-shadow: 0 22px 70px rgba(124, 58, 237, .35);
+      color: #fff;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .28s ease, transform .28s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    #welcome-banner.show {
+      opacity: 1;
+      transform: translate(-50%, 0) scale(1);
+    }
+
+    .welcome-main {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -.2px;
+    }
+
+    .welcome-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, .16);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .16);
+    }
+
+    .welcome-sub {
+      margin-top: 4px;
+      margin-left: 44px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, .78);
+      font-family: var(--mono);
+    }
+
     /* TOAST */
     #toast {
       position: fixed;
@@ -1698,6 +1759,12 @@
       </div>
     </div>
 
+    <div id="welcome-banner" aria-live="polite">
+      <div class="welcome-main"><span class="welcome-icon">🦈</span><span>Seja bem-vindo, <strong
+            id="welcome-name">Sharks</strong>!</span></div>
+      <div class="welcome-sub">Clique no tapete para criar pontos ou use o modo desenhar para traçar a rota.</div>
+    </div>
+
     <!-- MAIN -->
     <div id="main-area">
       <div id="canvas-wrap">
@@ -1895,10 +1962,28 @@
     });
 
     async function loadProfile() {
-      const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
-      currentProfile = data;
-      isProgrammer = data?.role === 'programmer' || data?.role === 'admin';
-      isAdmin = data?.role === 'admin';
+      const { data, error } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+
+      // Fallback: se o trigger do Supabase ainda não criou o perfil, cria aqui.
+      if (!data || error) {
+        const meta = currentUser.user_metadata || {};
+        const fallbackProfile = {
+          id: currentUser.id,
+          email: currentUser.email,
+          name: meta.name || currentUser.email.split('@')[0],
+          role: meta.role || 'assembler'
+        };
+        const { data: created } = await sb.from('profiles')
+          .upsert(fallbackProfile, { onConflict: 'id' })
+          .select('*')
+          .single();
+        currentProfile = created || fallbackProfile;
+      } else {
+        currentProfile = data;
+      }
+
+      isProgrammer = currentProfile?.role === 'programmer' || currentProfile?.role === 'admin';
+      isAdmin = currentProfile?.role === 'admin';
     }
 
     function enterApp() {
@@ -1908,6 +1993,10 @@
 
       // topbar user info
       const name = currentProfile?.name || currentUser.email.split('@')[0];
+
+      // welcome toast
+      setTimeout(() => showWelcome(name), 450);
+      setTimeout(() => toast(`🦈 Seja bem-vindo, ${name}!`), 700);
       const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
       document.getElementById('user-avatar-initials').textContent = initials;
       document.getElementById('user-name-top').textContent = name;
@@ -1918,7 +2007,7 @@
       pill.className = 'role-pill ' + (currentProfile?.role || 'assembler');
 
       // admin button
-      if (isAdmin) document.getElementById('admin-btn').style.display = '';
+      document.getElementById('admin-btn').style.display = isAdmin ? '' : 'none';
 
       // disable edit controls for read-only users
       const editEls = ['btn-mode-click', 'btn-mode-draw', 'btn-undo', 'btn-clear', 'btn-save-mission', 'btn-new-mission'];
@@ -2007,22 +2096,28 @@
       wrap = document.getElementById('canvas-wrap');
       ctx = canvas.getContext('2d');
 
-      // load tapete image
+      // Carrega o tapete real salvo na raiz do projeto.
       matImg = new Image();
-      matImg.src = 'sharks.png';
+      matImg.src = 'tapete.png';
       matImg.onload = () => draw();
-      matImg.onerror = () => { matImg = null; draw(); };
+      matImg.onerror = () => {
+        matImg = null;
+        toast('tapete.png não encontrado na raiz do projeto', true);
+        draw();
+      };
 
       resize();
+      window.removeEventListener('resize', resize);
       window.addEventListener('resize', resize);
 
-      if (isProgrammer) {
-        canvas.addEventListener('mousedown', onDown);
-        canvas.addEventListener('mousemove', onMove);
-        canvas.addEventListener('mouseup', onUp);
-        canvas.addEventListener('mouseleave', onUp);
-      } else {
-        canvas.addEventListener('mousemove', onMoveReadonly);
+      // Pointer Events funcionam com mouse, touch e caneta. Evita duplicar listeners ao relogar.
+      if (!canvas.dataset.bound) {
+        canvas.addEventListener('pointerdown', onDown);
+        canvas.addEventListener('pointermove', onMove);
+        canvas.addEventListener('pointerup', onUp);
+        canvas.addEventListener('pointercancel', onUp);
+        canvas.addEventListener('pointerleave', onUp);
+        canvas.dataset.bound = 'true';
       }
     }
 
@@ -2052,7 +2147,7 @@
 
       // tapete image or fallback
       if (matImg && matImg.complete && matImg.naturalWidth > 0) {
-        ctx.globalAlpha = 0.45;
+        ctx.globalAlpha = 0.98;
         ctx.drawImage(matImg, 0, 0, W, H);
         ctx.globalAlpha = 1;
       } else {
@@ -2061,7 +2156,7 @@
       }
 
       // dark overlay for contrast
-      ctx.fillStyle = 'rgba(8,4,15,0.55)';
+      ctx.fillStyle = 'rgba(8,4,15,0.08)';
       ctx.fillRect(0, 0, W, H);
 
       // grid lines
@@ -2136,30 +2231,64 @@
       ctx.restore();
     }
 
-    function onDown(e) {
-      if (!isProgrammer) return;
+    function getRealPointFromEvent(e) {
       const r = canvas.getBoundingClientRect();
-      const [rx, ry] = toReal(e.clientX - r.left, e.clientY - r.top);
-      if (rx < 0 || rx > FLL_W || ry < 0 || ry > FLL_H) return;
-      if (mode === 'click') addPoint(rx, ry);
-      else { isDrawing = true; lastDrawPt = [rx, ry]; addPoint(rx, ry); }
+      const cx = e.clientX - r.left;
+      const cy = e.clientY - r.top;
+      let [rx, ry] = toReal(cx, cy);
+      const inside = rx >= 0 && rx <= FLL_W && ry >= 0 && ry <= FLL_H;
+      rx = Math.max(0, Math.min(FLL_W, rx));
+      ry = Math.max(0, Math.min(FLL_H, ry));
+      return { rx, ry, inside };
     }
-    function onMove(e) {
-      if (!isProgrammer) return;
-      const r = canvas.getBoundingClientRect();
-      const [rx, ry] = toReal(e.clientX - r.left, e.clientY - r.top);
-      document.getElementById('hud-coords').textContent = `x: ${rx}  y: ${ry} mm`;
-      if (mode === 'draw' && isDrawing && lastDrawPt) {
-        const dx = rx - lastDrawPt[0], dy = ry - lastDrawPt[1];
-        if (Math.sqrt(dx * dx + dy * dy) > 85) { addPoint(rx, ry); lastDrawPt = [rx, ry]; }
+
+    function updateHud(rx, ry, inside = true) {
+      const suffix = inside ? '' : ' · fora do tapete';
+      document.getElementById('hud-coords').textContent = `x: ${rx}  y: ${ry} mm${suffix}`;
+    }
+
+    function onDown(e) {
+      const p = getRealPointFromEvent(e);
+      updateHud(p.rx, p.ry, p.inside);
+      if (!isProgrammer || !p.inside) return;
+
+      e.preventDefault();
+      try { canvas.setPointerCapture(e.pointerId); } catch (_) { }
+
+      if (mode === 'click') {
+        addPoint(p.rx, p.ry);
+      } else {
+        isDrawing = true;
+        lastDrawPt = [p.rx, p.ry];
+        addPoint(p.rx, p.ry);
       }
     }
-    function onMoveReadonly(e) {
-      const r = canvas.getBoundingClientRect();
-      const [rx, ry] = toReal(e.clientX - r.left, e.clientY - r.top);
-      document.getElementById('hud-coords').textContent = `x: ${rx}  y: ${ry} mm`;
+
+    function onMove(e) {
+      const p = getRealPointFromEvent(e);
+      updateHud(p.rx, p.ry, p.inside);
+      if (!isProgrammer) return;
+
+      if (mode === 'draw' && isDrawing && lastDrawPt && p.inside) {
+        e.preventDefault();
+        const dx = p.rx - lastDrawPt[0], dy = p.ry - lastDrawPt[1];
+        if (Math.sqrt(dx * dx + dy * dy) > 85) {
+          addPoint(p.rx, p.ry);
+          lastDrawPt = [p.rx, p.ry];
+        }
+      }
     }
-    function onUp() { isDrawing = false; lastDrawPt = null; }
+
+    function onMoveReadonly(e) {
+      const p = getRealPointFromEvent(e);
+      updateHud(p.rx, p.ry, p.inside);
+    }
+
+    function onUp(e) {
+      isDrawing = false;
+      lastDrawPt = null;
+      try { canvas.releasePointerCapture(e.pointerId); } catch (_) { }
+    }
 
     function addPoint(rx, ry) {
       steps.push({ type: 'IR_PARA', x: rx, y: ry });
@@ -2221,8 +2350,8 @@
       L.push('OBSTACULOS = []');
       L.push('');
       L.push('hub        = PrimeHub()');
-      L.push('motor_esq  = Motor(Port.E, Direction.COUNTERCLOCKWISE)');
-      L.push('motor_dir  = Motor(Port.F)');
+      L.push('motor_esq  = Motor(Port.F, Direction.COUNTERCLOCKWISE)');
+      L.push('motor_dir  = Motor(Port.E)');
       L.push('motor_peq1 = Motor(Port.B)');
       L.push('motor_peq2 = Motor(Port.A)');
       L.push('drive = DriveBase(motor_esq, motor_dir, wheel_diameter=60, axle_track=110)');
@@ -2329,10 +2458,18 @@
 
     function closeCode() { document.getElementById('code-modal').classList.remove('show'); }
     function copyCode() {
-      navigator.clipboard.writeText(document.getElementById('code-out').textContent).then(() => {
+      const text = document.getElementById('code-out').textContent;
+      const done = () => {
         const b = document.querySelector('.copy-btn');
         b.textContent = 'Copiado!'; setTimeout(() => b.textContent = 'Copiar código', 1600);
-      });
+      };
+      if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(() => toast('Não foi possível copiar automaticamente', true));
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); ta.remove(); done();
+      }
     }
 
     // ─── ADMIN ────────────────────────────────────────────
@@ -2400,14 +2537,25 @@
       });
     }
 
-    // ─── TOAST ────────────────────────────────────────────
+    // ─── WELCOME + TOAST ───────────────────────────────────
+
+    function showWelcome(name) {
+      const banner = document.getElementById('welcome-banner');
+      const nameEl = document.getElementById('welcome-name');
+      if (!banner || !nameEl) return;
+      nameEl.textContent = name || 'Sharks';
+      banner.classList.add('show');
+      clearTimeout(showWelcome._timer);
+      showWelcome._timer = setTimeout(() => banner.classList.remove('show'), 4600);
+    }
+
     let _toastTimer;
     function toast(msg, isErr = false) {
       const el = document.getElementById('toast');
       el.textContent = msg;
       el.className = 'show' + (isErr ? ' err' : '');
       clearTimeout(_toastTimer);
-      _toastTimer = setTimeout(() => el.className = '', 2400);
+      _toastTimer = setTimeout(() => el.className = '', 3500);
     }
 
     // ─── INIT ─────────────────────────────────────────────
