@@ -1913,12 +1913,53 @@
     async function doLogin() {
       const email = document.getElementById('l-email').value.trim();
       const pass = document.getElementById('l-pass').value;
-      if (!email || !pass) return setAuthMsg('preencha email e senha', 'err');
+
+      if (!email || !pass) {
+        return setAuthMsg('preencha email e senha', 'err');
+      }
+
       const btn = document.getElementById('btn-login');
-      btn.disabled = true; btn.textContent = 'entrando...';
-      const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-      btn.disabled = false; btn.textContent = 'Entrar →';
-      if (error) setAuthMsg(error.message, 'err');
+      btn.disabled = true;
+      btn.textContent = 'entrando...';
+      setAuthMsg('', 'err');
+
+      try {
+        const loginPromise = sb.auth.signInWithPassword({ email, password: pass });
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Tempo limite excedido. Verifique internet, URL/KEY do Supabase, CORS ou se o projeto Supabase está pausado.')), 12000);
+        });
+
+        const { data, error } = await Promise.race([loginPromise, timeoutPromise]);
+
+        if (error) {
+          setAuthMsg(traduzirErroSupabase(error.message), 'err');
+          return;
+        }
+
+        if (!data?.session?.user) {
+          setAuthMsg('Login aceito, mas nenhuma sessão foi retornada. Confira se o email está confirmado no Supabase.', 'err');
+          return;
+        }
+
+        currentUser = data.session.user;
+        await loadProfileSafe();
+        enterApp();
+
+      } catch (err) {
+        console.error('Erro no login:', err);
+        setAuthMsg(err.message || 'Erro inesperado ao fazer login.', 'err');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Entrar →';
+      }
+    }
+
+    function traduzirErroSupabase(msg) {
+      const m = String(msg || '').toLowerCase();
+      if (m.includes('email not confirmed')) return 'Email ainda não confirmado. Confirme no email ou desative Confirm email em Authentication → Providers → Email.';
+      if (m.includes('invalid login credentials')) return 'Email ou senha incorretos.';
+      if (m.includes('failed to fetch')) return 'Falha de conexão com o Supabase. Verifique URL, anon key, CORS, internet ou projeto pausado.';
+      return msg;
     }
 
     async function doRegister() {
@@ -1926,17 +1967,47 @@
       const email = document.getElementById('r-email').value.trim();
       const pass = document.getElementById('r-pass').value;
       const role = document.getElementById('r-role').value;
+
       if (!name || !email || !pass) return setAuthMsg('preencha todos os campos', 'err');
       if (pass.length < 6) return setAuthMsg('senha mínima: 6 caracteres', 'err');
+
       const btn = document.getElementById('btn-register');
-      btn.disabled = true; btn.textContent = 'criando conta...';
-      const { error } = await sb.auth.signUp({
-        email, password: pass,
-        options: { data: { name, role } }
-      });
-      btn.disabled = false; btn.textContent = 'Criar conta →';
-      if (error) setAuthMsg(error.message, 'err');
-      else setAuthMsg('✓ Conta criada! Verifique seu email para confirmar.', 'ok');
+      btn.disabled = true;
+      btn.textContent = 'criando conta...';
+      setAuthMsg('', 'err');
+
+      try {
+        const signupPromise = sb.auth.signUp({
+          email,
+          password: pass,
+          options: { data: { name, role } }
+        });
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Tempo limite excedido ao criar conta. Verifique Supabase/internet.')), 12000);
+        });
+
+        const { data, error } = await Promise.race([signupPromise, timeoutPromise]);
+
+        if (error) {
+          setAuthMsg(traduzirErroSupabase(error.message), 'err');
+          return;
+        }
+
+        if (data?.session?.user) {
+          currentUser = data.session.user;
+          await loadProfileSafe();
+          enterApp();
+          return;
+        }
+
+        setAuthMsg('✓ Conta criada. Se o login não entrar, confirme o email ou desative Confirm email no Supabase.', 'ok');
+      } catch (err) {
+        console.error('Erro no cadastro:', err);
+        setAuthMsg(err.message || 'Erro inesperado ao criar conta.', 'err');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Criar conta →';
+      }
     }
 
     function setAuthMsg(msg, type) {
@@ -1953,37 +2024,78 @@
       document.getElementById('landing').classList.remove('hide');
     }
 
-    sb.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        currentUser = session.user;
-        await loadProfile();
-        enterApp();
-      }
+    sb.auth.onAuthStateChange((event, session) => {
+      // Evita travamento dentro do callback do Supabase.
+      setTimeout(async () => {
+        if (session?.user && !document.getElementById('app').classList.contains('show')) {
+          try {
+            currentUser = session.user;
+            await loadProfileSafe();
+            enterApp();
+          } catch (err) {
+            console.error('Erro no onAuthStateChange:', err);
+            setAuthMsg(err.message || 'Erro ao carregar sessão.', 'err');
+          }
+        }
+      }, 0);
     });
 
-    async function loadProfile() {
-      const { data, error } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+    async function loadProfileSafe() {
+      if (!currentUser?.id) throw new Error('Usuário não encontrado na sessão.');
 
-      // Fallback: se o trigger do Supabase ainda não criou o perfil, cria aqui.
-      if (!data || error) {
-        const meta = currentUser.user_metadata || {};
-        const fallbackProfile = {
-          id: currentUser.id,
-          email: currentUser.email,
-          name: meta.name || currentUser.email.split('@')[0],
-          role: meta.role || 'assembler'
-        };
-        const { data: created } = await sb.from('profiles')
-          .upsert(fallbackProfile, { onConflict: 'id' })
+      const meta = currentUser.user_metadata || {};
+      const fallbackProfile = {
+        id: currentUser.id,
+        email: currentUser.email,
+        name: meta.name || currentUser.email.split('@')[0],
+        role: meta.role || 'assembler'
+      };
+
+      try {
+        const profilePromise = sb
+          .from('profiles')
           .select('*')
-          .single();
-        currentProfile = created || fallbackProfile;
-      } else {
-        currentProfile = data;
+          .eq('id', currentUser.id)
+          .maybeSingle();
+
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Login feito, mas o perfil demorou demais para carregar. Verifique tabela profiles/RLS.')), 10000);
+        });
+
+        const { data, error } = await Promise.race([profilePromise, timeoutPromise]);
+
+        if (error) {
+          console.warn('Erro ao buscar profile. Usando fallback local:', error);
+          currentProfile = fallbackProfile;
+        } else if (data) {
+          currentProfile = data;
+        } else {
+          // Tenta criar perfil caso o trigger não tenha criado.
+          const { data: created, error: createError } = await sb
+            .from('profiles')
+            .insert(fallbackProfile)
+            .select('*')
+            .single();
+
+          if (createError) {
+            console.warn('Não foi possível criar profile via front. Usando fallback local:', createError);
+            currentProfile = fallbackProfile;
+          } else {
+            currentProfile = created;
+          }
+        }
+      } catch (err) {
+        console.warn('Falha ao carregar profile. Usando fallback local:', err);
+        currentProfile = fallbackProfile;
       }
 
       isProgrammer = currentProfile?.role === 'programmer' || currentProfile?.role === 'admin';
       isAdmin = currentProfile?.role === 'admin';
+    }
+
+    // Compatibilidade com chamadas antigas.
+    async function loadProfile() {
+      return loadProfileSafe();
     }
 
     function enterApp() {
