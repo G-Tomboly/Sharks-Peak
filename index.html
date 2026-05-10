@@ -1,2724 +1,1666 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SharksPeak — FLL Visual Programmer</title>
+  <title>SharksPeak v3 — FLL Visual Programmer</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap"
-    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
-    /* ═══════════════════════════════════════════
-   TOKENS
-═══════════════════════════════════════════ */
     :root {
-      --bg: #08060f;
-      --bg2: #0f0c1a;
-      --bg3: #161228;
-      --bg4: #1e1835;
-      --purple: #7C3AED;
-      --purple2: #9B5CF6;
-      --purple3: #B78BFA;
-      --purple-dim: #3B1D7A;
-      --orange: #F97316;
-      --orange2: #FB923C;
-      --orange-dim: #7C2D0A;
-      --text: #F1EEFF;
-      --text2: #9D8EC8;
-      --text3: #5A4E7A;
-      --border: rgba(124, 58, 237, 0.18);
-      --border2: rgba(124, 58, 237, 0.35);
-      --glow: rgba(124, 58, 237, 0.25);
-      --glow-o: rgba(249, 115, 22, 0.2);
-      --mono: 'JetBrains Mono', monospace;
-      --display: 'Syne', sans-serif;
-      --body: 'Space Grotesk', sans-serif;
-      --r: 8px;
-      --r2: 14px;
-    }
-
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html,
-    body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--body);
-      overflow: hidden;
-    }
-
-    input,
-    button,
-    select,
-    textarea {
-      font-family: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    /* ═══════════════ NOISE OVERLAY ═══════════════ */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 9999;
-      opacity: 0.6;
-    }
-
-    /* ═══════════════ SCROLLBAR ═══════════════ */
-    ::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: var(--border2);
-      border-radius: 2px;
-    }
-
-    /* ═══════════════════════════════════════════
-   LANDING PAGE
-═══════════════════════════════════════════ */
-    #landing {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-      overflow-x: hidden;
-      background: var(--bg);
-      z-index: 100;
-      transition: opacity .5s, transform .5s;
-    }
-
-    #landing.hide {
-      opacity: 0;
-      transform: translateY(-20px);
-      pointer-events: none;
-    }
-
-    /* hero */
-    .hero {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      padding: 40px 20px;
-      text-align: center;
-    }
-
-    .hero-bg {
-      position: absolute;
-      inset: 0;
-      overflow: hidden;
-      pointer-events: none;
-    }
-
-    .hero-orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(90px);
-    }
-
-    .orb1 {
-      width: 500px;
-      height: 500px;
-      background: radial-gradient(circle, rgba(124, 58, 237, 0.3), transparent 70%);
-      top: -100px;
-      left: -100px;
-    }
-
-    .orb2 {
-      width: 400px;
-      height: 400px;
-      background: radial-gradient(circle, rgba(249, 115, 22, 0.2), transparent 70%);
-      bottom: -80px;
-      right: -80px;
-    }
-
-    .orb3 {
-      width: 300px;
-      height: 300px;
-      background: radial-gradient(circle, rgba(124, 58, 237, 0.15), transparent 70%);
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    .hero-content {
-      position: relative;
-      z-index: 1;
-      max-width: 820px;
-    }
-
-    .shark-logo {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 32px;
-    }
-
-    .shark-logo img {
-      width: 56px;
-      height: 56px;
-      object-fit: contain;
-      filter: drop-shadow(0 0 16px rgba(249, 115, 22, 0.6));
-    }
-
-    .shark-logo-text {
-      font-family: var(--display);
-      font-size: 28px;
-      font-weight: 800;
-      background: linear-gradient(135deg, #B78BFA, #F97316);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: -1px;
-    }
-
-    .hero h1 {
-      font-family: var(--display);
-      font-size: clamp(42px, 7vw, 88px);
-      font-weight: 800;
-      line-height: 0.95;
-      letter-spacing: -3px;
-      margin-bottom: 8px;
-    }
-
-    .hero h1 .line1 {
-      display: block;
-      color: var(--text);
-    }
-
-    .hero h1 .line2 {
-      display: block;
-      background: linear-gradient(90deg, #7C3AED, #F97316 60%, #FB923C);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .hero-sub {
-      margin-top: 20px;
-      font-size: 16px;
-      color: var(--text2);
-      line-height: 1.6;
-      max-width: 520px;
-      margin-inline: auto;
-    }
-
-    .hero-ctas {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      margin-top: 36px;
-      flex-wrap: wrap;
-    }
-
-    .btn-primary {
-      padding: 13px 32px;
-      background: linear-gradient(135deg, var(--purple), var(--orange));
-      border: none;
-      border-radius: var(--r);
-      color: #fff;
-      font-size: 15px;
-      font-weight: 600;
-      box-shadow: 0 0 30px rgba(124, 58, 237, 0.4);
-      transition: all .2s;
-      letter-spacing: -0.2px;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 0 50px rgba(124, 58, 237, 0.6);
-    }
-
-    .btn-ghost {
-      padding: 13px 28px;
-      background: transparent;
-      border: 1px solid var(--border2);
-      border-radius: var(--r);
-      color: var(--text2);
-      font-size: 15px;
-      font-weight: 500;
-      transition: all .2s;
-    }
-
-    .btn-ghost:hover {
-      border-color: var(--purple3);
-      color: var(--text);
-    }
-
-    /* app preview strip */
-    .preview-strip {
-      margin-top: 60px;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .preview-mat {
-      width: min(700px, 90vw);
-      border: 1px solid var(--border2);
-      border-radius: var(--r2);
-      overflow: hidden;
-      box-shadow: 0 0 80px rgba(124, 58, 237, 0.3);
-      position: relative;
-    }
-
-    .preview-mat img {
-      width: 100%;
-      display: block;
-      opacity: 0.85;
-    }
-
-    .preview-mat-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to bottom, transparent 40%, var(--bg) 100%);
-    }
-
-    /* features */
-    .features {
-      padding: 80px 20px;
-      max-width: 1000px;
-      margin-inline: auto;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 16px;
-      margin-top: 40px;
-    }
-
-    .feature-card {
-      padding: 24px;
-      border: 1px solid var(--border);
-      border-radius: var(--r2);
-      background: var(--bg2);
-      transition: border-color .2s, transform .2s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .feature-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at top left, var(--glow) 0%, transparent 60%);
-      opacity: 0;
-      transition: opacity .3s;
-    }
-
-    .feature-card:hover {
-      border-color: var(--border2);
-      transform: translateY(-3px);
-    }
-
-    .feature-card:hover::before {
-      opacity: 1;
-    }
-
-    .feat-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: var(--r);
-      background: linear-gradient(135deg, var(--purple-dim), var(--bg4));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      margin-bottom: 14px;
-      border: 1px solid var(--border2);
-    }
-
-    .feat-title {
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: var(--text);
-    }
-
-    .feat-desc {
-      font-size: 13px;
-      color: var(--text2);
-      line-height: 1.6;
-    }
-
-    /* team section */
-    .team-section {
-      padding: 80px 20px;
-      max-width: 1000px;
-      margin-inline: auto;
-      text-align: center;
-    }
-
-    .team-img-wrap {
-      margin-top: 36px;
-      position: relative;
-      display: inline-block;
-    }
-
-    .team-img-wrap img {
-      width: min(700px, 90vw);
-      border-radius: var(--r2);
-      border: 1px solid var(--border2);
-      box-shadow: 0 0 60px rgba(124, 58, 237, 0.25);
-    }
-
-    .team-img-badge {
-      position: absolute;
-      bottom: -14px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: linear-gradient(135deg, var(--purple), var(--orange));
-      padding: 6px 20px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #fff;
-      white-space: nowrap;
-      font-family: var(--mono);
-      letter-spacing: 0.5px;
-    }
-
-    .section-label {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--orange);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-
-    .section-title {
-      font-family: var(--display);
-      font-size: clamp(28px, 4vw, 42px);
-      font-weight: 800;
-      letter-spacing: -1.5px;
-    }
-
-    /* footer */
-    .landing-footer {
-      padding: 30px 20px;
-      text-align: center;
-      border-top: 1px solid var(--border);
-      font-size: 12px;
-      color: var(--text3);
-      font-family: var(--mono);
-    }
-
-    /* ═══════════════════════════════════════════
-   AUTH MODAL
-═══════════════════════════════════════════ */
-    #auth-modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(8, 6, 15, 0.85);
-      backdrop-filter: blur(12px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 500;
-      padding: 20px;
-    }
-
-    #auth-modal.show {
-      display: flex;
-    }
-
-    .auth-card {
-      width: 100%;
-      max-width: 400px;
-      background: var(--bg2);
-      border: 1px solid var(--border2);
-      border-radius: var(--r2);
-      padding: 36px 32px;
-      position: relative;
-      box-shadow: 0 0 80px rgba(124, 58, 237, 0.3);
-      animation: modal-in .3s ease;
-    }
-
-    @keyframes modal-in {
-      from {
-        opacity: 0;
-        transform: scale(0.95) translateY(10px);
-      }
-
-      to {
-        opacity: 1;
-        transform: none;
-      }
-    }
-
-    .auth-card-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 28px;
-    }
-
-    .auth-card-header img {
-      width: 36px;
-      height: 36px;
-      object-fit: contain;
-      filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.5));
-    }
-
-    .auth-card-title {
-      font-family: var(--display);
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-    }
-
-    .auth-card-title span {
-      background: linear-gradient(90deg, var(--purple3), var(--orange));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .auth-close {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      background: none;
-      border: none;
-      color: var(--text3);
-      font-size: 20px;
-      line-height: 1;
-      padding: 4px;
-    }
-
-    .auth-close:hover {
-      color: var(--text);
-    }
-
-    .auth-tabs {
-      display: flex;
-      gap: 0;
-      background: var(--bg3);
-      border-radius: var(--r);
-      padding: 3px;
-      margin-bottom: 24px;
-    }
-
-    .auth-tab {
-      flex: 1;
-      padding: 8px;
-      text-align: center;
-      font-size: 13px;
-      font-weight: 500;
-      border: none;
-      background: transparent;
-      color: var(--text3);
-      border-radius: 6px;
-      transition: all .2s;
-    }
-
-    .auth-tab.active {
-      background: var(--bg2);
-      color: var(--text);
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-    }
-
-    .field {
-      margin-bottom: 16px;
-    }
-
-    .field label {
-      display: block;
-      font-size: 11px;
-      color: var(--text3);
-      font-family: var(--mono);
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      margin-bottom: 6px;
-    }
-
-    .field input,
-    .field select {
-      width: 100%;
-      padding: 10px 14px;
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      color: var(--text);
-      font-size: 14px;
-      transition: border-color .2s;
-    }
-
-    .field input:focus,
-    .field select:focus {
-      outline: none;
-      border-color: var(--purple2);
-      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
-    }
-
-    .field select option {
-      background: var(--bg3);
-    }
-
-    .auth-submit {
-      width: 100%;
-      padding: 12px;
-      background: linear-gradient(135deg, var(--purple), var(--orange));
-      border: none;
-      border-radius: var(--r);
-      color: #fff;
-      font-size: 14px;
-      font-weight: 600;
-      box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
-      transition: all .2s;
-      margin-top: 4px;
-    }
-
-    .auth-submit:hover {
-      box-shadow: 0 0 35px rgba(124, 58, 237, 0.5);
-      transform: translateY(-1px);
-    }
-
-    .auth-submit:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .auth-err {
-      font-size: 12px;
-      font-family: var(--mono);
-      color: #F87171;
-      margin-top: 10px;
-      min-height: 18px;
-      text-align: center;
-    }
-
-    .auth-ok {
-      font-size: 12px;
-      font-family: var(--mono);
-      color: #86EFAC;
-      margin-top: 10px;
-      min-height: 18px;
-      text-align: center;
-    }
-
-    /* ═══════════════════════════════════════════
-   APP
-═══════════════════════════════════════════ */
-    #app {
-      position: fixed;
-      inset: 0;
-      display: none;
-      flex-direction: column;
-      background: var(--bg);
-    }
-
-    #app.show {
-      display: flex;
-    }
-
-    /* TOPBAR */
-    #topbar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 0 16px;
-      height: 48px;
-      flex-shrink: 0;
-      background: var(--bg2);
-      border-bottom: 1px solid var(--border);
-      position: relative;
-      z-index: 10;
-    }
-
-    .top-logo {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .top-logo img {
-      width: 26px;
-      height: 26px;
-      object-fit: contain;
-      filter: drop-shadow(0 0 6px rgba(249, 115, 22, 0.5));
-    }
-
-    .top-logo-text {
-      font-family: var(--display);
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      background: linear-gradient(90deg, var(--purple3), var(--orange2));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .top-sep {
-      width: 1px;
-      height: 20px;
-      background: var(--border);
-      margin: 0 4px;
-    }
-
-    .tb-btn {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      padding: 5px 11px;
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      background: transparent;
-      color: var(--text2);
-      font-size: 12px;
-      font-weight: 500;
-      transition: all .15s;
-    }
-
-    .tb-btn:hover {
-      border-color: var(--purple2);
-      color: var(--text);
-    }
-
-    .tb-btn.active {
-      background: var(--purple);
-      border-color: var(--purple);
-      color: #fff;
-    }
-
-    .tb-btn:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
-    }
-
-    .tb-btn.orange {
-      background: var(--orange);
-      border-color: var(--orange);
-      color: #fff;
-    }
-
-    .tb-btn.orange:hover {
-      background: #EA6C0A;
-    }
-
-    .top-right {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .user-chip {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 4px 12px 4px 6px;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      background: var(--bg3);
-    }
-
-    .user-avatar {
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--purple), var(--orange));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 700;
-      color: #fff;
-    }
-
-    .user-info {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .user-name-top {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text);
-      line-height: 1.2;
-    }
-
-    .user-role-top {
-      font-size: 10px;
-      font-family: var(--mono);
-      color: var(--text3);
-      line-height: 1.2;
-    }
-
-    .role-pill {
-      font-size: 10px;
-      font-family: var(--mono);
-      font-weight: 500;
-      padding: 2px 8px;
-      border-radius: 20px;
-    }
-
-    .role-pill.programmer {
-      background: rgba(124, 58, 237, 0.2);
-      color: var(--purple3);
-      border: 1px solid rgba(124, 58, 237, 0.3);
-    }
-
-    .role-pill.assembler {
-      background: rgba(249, 115, 22, 0.15);
-      color: var(--orange2);
-      border: 1px solid rgba(249, 115, 22, 0.3);
-    }
-
-    .role-pill.admin {
-      background: rgba(249, 115, 22, 0.25);
-      color: #FCD34D;
-      border: 1px solid rgba(252, 211, 77, 0.3);
-    }
-
-    .logout-btn {
-      padding: 5px 10px;
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      background: transparent;
-      color: var(--text3);
-      font-size: 11px;
-      transition: all .15s;
-    }
-
-    .logout-btn:hover {
-      border-color: #F87171;
-      color: #F87171;
-    }
-
-    .admin-btn {
-      padding: 5px 11px;
-      border: 1px solid rgba(252, 211, 77, 0.3);
-      border-radius: var(--r);
-      background: rgba(252, 211, 77, 0.08);
-      color: #FCD34D;
-      font-size: 11px;
-      font-weight: 500;
-      transition: all .15s;
-    }
-
-    .admin-btn:hover {
-      background: rgba(252, 211, 77, 0.15);
-    }
-
-    /* MAIN LAYOUT */
-    #main-area {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-
-    /* CANVAS */
-    #canvas-wrap {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-      background: #050310;
-    }
-
-    #mat-canvas {
-      display: block;
-    }
-
-    .hud-coords {
-      position: absolute;
-      bottom: 12px;
-      left: 12px;
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--purple3);
-      background: rgba(8, 6, 15, 0.75);
-      border: 1px solid var(--border);
-      padding: 4px 12px;
-      border-radius: 20px;
-      pointer-events: none;
-      backdrop-filter: blur(4px);
-    }
-
-    .hud-mode {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--orange2);
-      background: rgba(8, 6, 15, 0.75);
-      border: 1px solid rgba(249, 115, 22, 0.3);
-      padding: 4px 12px;
-      border-radius: 20px;
-      pointer-events: none;
-      backdrop-filter: blur(4px);
-    }
-
-    .hud-readonly {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      font-family: var(--mono);
-      font-size: 10px;
-      color: #FCD34D;
-      background: rgba(8, 6, 15, 0.75);
-      border: 1px solid rgba(252, 211, 77, 0.3);
-      padding: 4px 12px;
-      border-radius: 20px;
-      pointer-events: none;
-      backdrop-filter: blur(4px);
-      display: none;
-    }
-
-    .hud-readonly.show {
-      display: block;
-    }
-
-    /* SIDEBAR */
-    #sidebar {
-      width: 240px;
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      border-left: 1px solid var(--border);
-      background: var(--bg2);
-      overflow: hidden;
-    }
-
-    .sb-section {
-      padding: 12px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .sb-label {
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--text3);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 10px;
-    }
-
-    .sb-input {
-      width: 100%;
-      padding: 8px 10px;
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      color: var(--text);
-      font-size: 12px;
-      transition: border-color .15s;
-    }
-
-    .sb-input:focus {
-      outline: none;
-      border-color: var(--purple2);
-    }
-
-    .sb-row {
-      display: flex;
-      gap: 6px;
-      margin-top: 6px;
-    }
-
-    .sb-btn {
-      flex: 1;
-      padding: 7px 10px;
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      background: transparent;
-      color: var(--text2);
-      font-size: 11px;
-      font-weight: 500;
-      transition: all .15s;
-      white-space: nowrap;
-    }
-
-    .sb-btn:hover {
-      border-color: var(--purple2);
-      color: var(--text);
-    }
-
-    .sb-btn.primary {
-      background: var(--purple);
-      border-color: var(--purple);
-      color: #fff;
-    }
-
-    .sb-btn.primary:hover {
-      background: #6D28D9;
-    }
-
-    .sb-btn:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
-    }
-
-    /* missions list */
-    .missions-scroll {
-      max-height: 130px;
-      overflow-y: auto;
-    }
-
-    .mission-item {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      padding: 7px 8px;
-      border-radius: var(--r);
-      cursor: pointer;
-      font-size: 12px;
-      color: var(--text2);
-      transition: all .15s;
-      margin-bottom: 2px;
-    }
-
-    .mission-item:hover {
-      background: var(--bg3);
-      color: var(--text);
-    }
-
-    .mission-item.active {
-      background: rgba(124, 58, 237, 0.15);
-      color: var(--purple3);
-    }
-
-    .mi-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      background: var(--purple);
-    }
-
-    .mi-name {
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      font-family: var(--mono);
-    }
-
-    .mi-del {
-      opacity: 0;
-      color: #F87171;
-      font-size: 14px;
-      line-height: 1;
-      border: none;
-      background: none;
-      padding: 0;
-    }
-
-    .mission-item:hover .mi-del {
-      opacity: 1;
-    }
-
-    /* steps panel */
-    #steps-scroll {
-      flex: 1;
-      overflow-y: auto;
-      padding: 10px;
-    }
-
-    .step-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 8px;
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      margin-bottom: 4px;
-      font-size: 11px;
-      font-family: var(--mono);
-      color: var(--text2);
-      background: var(--bg3);
-      transition: border-color .15s;
-    }
-
-    .step-item:hover {
-      border-color: var(--border2);
-    }
-
-    .step-n {
-      color: var(--text3);
-      min-width: 16px;
-    }
-
-    .step-tag {
-      font-size: 9px;
-      padding: 2px 6px;
-      border-radius: 10px;
-      font-weight: 600;
-      background: rgba(124, 58, 237, 0.2);
-      color: var(--purple3);
-      border: 1px solid rgba(124, 58, 237, 0.3);
-    }
-
-    .step-desc {
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .step-del {
-      opacity: 0;
-      color: #F87171;
-      font-size: 13px;
-      line-height: 1;
-      border: none;
-      background: none;
-      padding: 0;
-    }
-
-    .step-item:hover .step-del {
-      opacity: 1;
-    }
-
-    .steps-empty {
-      text-align: center;
-      padding: 24px 12px;
-      font-size: 11px;
-      font-family: var(--mono);
-      color: var(--text3);
-      line-height: 1.8;
-    }
-
-    /* BOTTOM BAR */
-    #bottombar {
-      display: flex;
-      gap: 8px;
-      padding: 10px 16px;
-      background: var(--bg2);
-      border-top: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-
-    .bottom-btn {
-      flex: 1;
-      padding: 10px;
-      border-radius: var(--r);
-      border: none;
-      font-size: 13px;
-      font-weight: 600;
-      transition: all .2s;
-    }
-
-    .bottom-btn.primary {
-      background: linear-gradient(135deg, var(--purple), var(--orange));
-      color: #fff;
-      box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
-    }
-
-    .bottom-btn.primary:hover {
-      box-shadow: 0 0 35px rgba(124, 58, 237, 0.5);
-    }
-
-    .bottom-btn.secondary {
-      background: var(--bg3);
-      color: var(--text2);
-      border: 1px solid var(--border);
-    }
-
-    .bottom-btn.secondary:hover {
-      border-color: var(--border2);
-      color: var(--text);
-    }
-
-    /* ═══════════════════════════════════════════
-   CODE MODAL
-═══════════════════════════════════════════ */
-    #code-modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(8, 6, 15, 0.85);
-      backdrop-filter: blur(12px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 600;
-      padding: 20px;
-    }
-
-    #code-modal.show {
-      display: flex;
-    }
-
-    #code-box {
-      background: var(--bg2);
-      border: 1px solid var(--border2);
-      border-radius: var(--r2);
-      width: 100%;
-      max-width: 680px;
-      max-height: 84vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      box-shadow: 0 0 80px rgba(124, 58, 237, 0.3);
-      animation: modal-in .3s ease;
-    }
-
-    #code-box header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 20px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    #code-box header span {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--purple3);
-    }
-
-    .code-close {
-      background: none;
-      border: none;
-      color: var(--text3);
-      font-size: 20px;
-      line-height: 1;
-    }
-
-    .code-close:hover {
-      color: var(--text);
-    }
-
-    #code-out {
-      flex: 1;
-      overflow: auto;
-      padding: 20px;
-      font-size: 12px;
-      line-height: 1.8;
-      font-family: var(--mono);
-      color: #C4A8FF;
-      background: #050210;
-      white-space: pre;
-    }
-
-    #code-box footer {
-      padding: 10px 20px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-    }
-
-    .copy-btn {
-      padding: 8px 20px;
-      background: linear-gradient(135deg, var(--purple), var(--orange));
-      border: none;
-      border-radius: var(--r);
-      color: #fff;
-      font-size: 12px;
-      font-family: var(--mono);
-      font-weight: 500;
-    }
-
-    .copy-btn:hover {
-      opacity: 0.9;
-    }
-
-    /* ═══════════════════════════════════════════
-   ADMIN PANEL MODAL
-═══════════════════════════════════════════ */
-    #admin-modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(8, 6, 15, 0.9);
-      backdrop-filter: blur(12px);
-      display: none;
-      align-items: flex-start;
-      justify-content: center;
-      z-index: 700;
-      padding: 20px;
-      overflow-y: auto;
-    }
-
-    #admin-modal.show {
-      display: flex;
-    }
-
-    #admin-box {
-      background: var(--bg2);
-      border: 1px solid rgba(252, 211, 77, 0.3);
-      border-radius: var(--r2);
-      width: 100%;
-      max-width: 820px;
-      margin: auto;
-      box-shadow: 0 0 80px rgba(252, 211, 77, 0.1);
-      animation: modal-in .3s ease;
-      overflow: hidden;
-    }
-
-    #admin-box header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--border);
-      background: linear-gradient(90deg, rgba(252, 211, 77, 0.05), transparent);
-    }
-
-    .admin-title {
-      font-family: var(--display);
-      font-size: 18px;
-      font-weight: 800;
-      color: #FCD34D;
-      letter-spacing: -0.5px;
-    }
-
-    .admin-body {
-      padding: 24px;
-    }
-
-    .admin-section-title {
-      font-family: var(--mono);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--text3);
-      margin-bottom: 12px;
-      margin-top: 20px;
-    }
-
-    .admin-section-title:first-child {
-      margin-top: 0;
-    }
-
-    /* users table */
-    .admin-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-    }
-
-    .admin-table th {
-      padding: 8px 12px;
-      text-align: left;
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--text3);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .admin-table td {
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--border);
-      color: var(--text2);
-      font-family: var(--mono);
-    }
-
-    .admin-table tr:last-child td {
-      border-bottom: none;
-    }
-
-    .admin-table tr:hover td {
-      background: var(--bg3);
-    }
-
-    .role-select {
-      padding: 4px 8px;
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      color: var(--text);
-      font-size: 11px;
-      font-family: var(--mono);
-    }
-
-    .save-role-btn {
-      padding: 4px 10px;
-      background: var(--purple);
-      border: none;
-      border-radius: var(--r);
-      color: #fff;
-      font-size: 11px;
-      font-family: var(--mono);
-    }
-
-    .save-role-btn:hover {
-      background: #6D28D9;
-    }
-
-    /* logs */
-    .log-item {
-      padding: 8px 12px;
-      border-radius: var(--r);
-      background: var(--bg3);
-      margin-bottom: 4px;
-      font-size: 11px;
-      font-family: var(--mono);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .log-user {
-      color: var(--purple3);
-      min-width: 100px;
-    }
-
-    .log-action {
-      color: var(--text2);
-      flex: 1;
-    }
-
-    .log-time {
-      color: var(--text3);
-      font-size: 10px;
-      white-space: nowrap;
-    }
-
-    .admin-stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .stat-card {
-      padding: 16px;
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      background: var(--bg3);
-      text-align: center;
-    }
-
-    .stat-num {
-      font-family: var(--display);
-      font-size: 28px;
-      font-weight: 800;
-      color: var(--purple3);
-    }
-
-    .stat-label {
-      font-size: 11px;
-      color: var(--text3);
-      font-family: var(--mono);
-      margin-top: 2px;
-    }
-
-
-    /* CANVAS INTERACTION */
-    #mat-canvas {
-      cursor: crosshair;
-      touch-action: none;
-      user-select: none;
-    }
-
-    /* WELCOME DISPLAY */
-    #welcome-banner {
-      position: absolute;
-      top: 62px;
-      left: 50%;
-      transform: translate(-50%, -10px) scale(.98);
-      z-index: 40;
-      min-width: min(520px, calc(100vw - 32px));
-      padding: 14px 18px;
-      border-radius: var(--r2);
-      background: linear-gradient(135deg, rgba(124, 58, 237, .88), rgba(249, 115, 22, .88));
-      border: 1px solid rgba(255, 255, 255, .18);
-      box-shadow: 0 22px 70px rgba(124, 58, 237, .35);
-      color: #fff;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .28s ease, transform .28s ease;
-      backdrop-filter: blur(10px);
-    }
-
-    #welcome-banner.show {
-      opacity: 1;
-      transform: translate(-50%, 0) scale(1);
-    }
-
-    .welcome-main {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: -.2px;
-    }
-
-    .welcome-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, .16);
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .16);
-    }
-
-    .welcome-sub {
-      margin-top: 4px;
-      margin-left: 44px;
-      font-size: 12px;
-      color: rgba(255, 255, 255, .78);
-      font-family: var(--mono);
-    }
-
-    /* TOAST */
-    #toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--bg3);
-      border: 1px solid var(--border2);
-      border-radius: 20px;
-      padding: 9px 22px;
-      font-size: 12px;
-      font-family: var(--mono);
-      color: var(--purple3);
-      opacity: 0;
-      transition: opacity .3s;
-      pointer-events: none;
-      z-index: 900;
-      box-shadow: 0 0 20px var(--glow);
-    }
-
-    #toast.show {
-      opacity: 1;
-    }
-
-    #toast.err {
-      color: #F87171;
-      border-color: rgba(248, 113, 113, 0.4);
-    }
+      --bg:#08060f; --bg2:#0f0c1a; --bg3:#161228; --bg4:#1e1835;
+      --purple:#7C3AED; --purple2:#9B5CF6; --purple3:#B78BFA; --purple-dim:#3B1D7A;
+      --orange:#F97316; --orange2:#FB923C; --orange-dim:#7C2D0A;
+      --text:#F1EEFF; --text2:#9D8EC8; --text3:#5A4E7A;
+      --border:rgba(124,58,237,.18); --border2:rgba(124,58,237,.35);
+      --glow:rgba(124,58,237,.25); --glow-o:rgba(249,115,22,.2);
+      --mono:'JetBrains Mono',monospace; --display:'Syne',sans-serif; --body:'Space Grotesk',sans-serif;
+      --r:8px; --r2:14px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--body);overflow:hidden}
+    input,button,select,textarea{font-family:inherit}
+    button{cursor:pointer}
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.6}
+    ::-webkit-scrollbar{width:4px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+    /* ── LANDING ── */
+    #landing{position:fixed;inset:0;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;background:var(--bg);z-index:100;transition:opacity .5s,transform .5s}
+    #landing.hide{opacity:0;transform:translateY(-20px);pointer-events:none}
+    .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:40px 20px;text-align:center}
+    .hero-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+    .hero-orb{position:absolute;border-radius:50%;filter:blur(90px)}
+    .orb1{width:500px;height:500px;background:radial-gradient(circle,rgba(124,58,237,.3),transparent 70%);top:-100px;left:-100px}
+    .orb2{width:400px;height:400px;background:radial-gradient(circle,rgba(249,115,22,.2),transparent 70%);bottom:-80px;right:-80px}
+    .orb3{width:300px;height:300px;background:radial-gradient(circle,rgba(124,58,237,.15),transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)}
+    .hero-content{position:relative;z-index:1;max-width:820px}
+    .shark-logo{display:inline-flex;align-items:center;gap:12px;margin-bottom:32px}
+    .shark-logo img{width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 0 16px rgba(249,115,22,.6))}
+    .shark-logo-text{font-family:var(--display);font-size:28px;font-weight:800;background:linear-gradient(135deg,#B78BFA,#F97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1px}
+    .hero h1{font-family:var(--display);font-size:clamp(42px,7vw,88px);font-weight:800;line-height:.95;letter-spacing:-3px;margin-bottom:8px}
+    .hero h1 .line1{display:block;color:var(--text)}
+    .hero h1 .line2{display:block;background:linear-gradient(90deg,#7C3AED,#F97316 60%,#FB923C);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .hero-sub{margin-top:20px;font-size:16px;color:var(--text2);line-height:1.6;max-width:520px;margin-inline:auto}
+    .hero-ctas{display:flex;gap:12px;justify-content:center;margin-top:36px;flex-wrap:wrap}
+    .btn-primary{padding:13px 32px;background:linear-gradient(135deg,var(--purple),var(--orange));border:none;border-radius:var(--r);color:#fff;font-size:15px;font-weight:600;box-shadow:0 0 30px rgba(124,58,237,.4);transition:all .2s;letter-spacing:-.2px}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 50px rgba(124,58,237,.6)}
+    .btn-ghost{padding:13px 28px;background:transparent;border:1px solid var(--border2);border-radius:var(--r);color:var(--text2);font-size:15px;font-weight:500;transition:all .2s}
+    .btn-ghost:hover{border-color:var(--purple3);color:var(--text)}
+    .preview-strip{margin-top:60px;position:relative;display:flex;align-items:center;justify-content:center}
+    .preview-mat{width:min(700px,90vw);border:1px solid var(--border2);border-radius:var(--r2);overflow:hidden;box-shadow:0 0 80px rgba(124,58,237,.3);position:relative}
+    .preview-mat img,.preview-mat svg{width:100%;display:block}
+    .preview-mat-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,var(--bg) 100%)}
+    .features{padding:80px 20px;max-width:1000px;margin-inline:auto}
+    .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:40px}
+    .feature-card{padding:24px;border:1px solid var(--border);border-radius:var(--r2);background:var(--bg2);transition:border-color .2s,transform .2s;position:relative;overflow:hidden}
+    .feature-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at top left,var(--glow) 0%,transparent 60%);opacity:0;transition:opacity .3s}
+    .feature-card:hover{border-color:var(--border2);transform:translateY(-3px)}
+    .feature-card:hover::before{opacity:1}
+    .feat-icon{width:40px;height:40px;border-radius:var(--r);background:linear-gradient(135deg,var(--purple-dim),var(--bg4));display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:14px;border:1px solid var(--border2)}
+    .feat-title{font-size:15px;font-weight:600;margin-bottom:6px;color:var(--text)}
+    .feat-desc{font-size:13px;color:var(--text2);line-height:1.6}
+    .team-section{padding:80px 20px;max-width:1000px;margin-inline:auto;text-align:center}
+    .team-img-wrap{margin-top:36px;position:relative;display:inline-block}
+    .team-img-wrap img{width:min(700px,90vw);border-radius:var(--r2);border:1px solid var(--border2);box-shadow:0 0 60px rgba(124,58,237,.25)}
+    .team-img-badge{position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--purple),var(--orange));padding:6px 20px;border-radius:20px;font-size:12px;font-weight:600;color:#fff;white-space:nowrap;font-family:var(--mono);letter-spacing:.5px}
+    .section-label{font-family:var(--mono);font-size:11px;color:var(--orange);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+    .section-title{font-family:var(--display);font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-1.5px}
+    .landing-footer{padding:30px 20px;text-align:center;border-top:1px solid var(--border);font-size:12px;color:var(--text3);font-family:var(--mono)}
+
+    /* ── AUTH ── */
+    #auth-modal{position:fixed;inset:0;background:rgba(8,6,15,.85);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;z-index:500;padding:20px}
+    #auth-modal.show{display:flex}
+    .auth-card{width:100%;max-width:400px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);padding:36px 32px;position:relative;box-shadow:0 0 80px rgba(124,58,237,.3);animation:modal-in .3s ease}
+    @keyframes modal-in{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:none}}
+    .auth-card-header{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+    .auth-card-header img{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 8px rgba(249,115,22,.5))}
+    .auth-card-title{font-family:var(--display);font-size:20px;font-weight:800;letter-spacing:-.5px}
+    .auth-card-title span{background:linear-gradient(90deg,var(--purple3),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .auth-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text3);font-size:20px;line-height:1;padding:4px}
+    .auth-close:hover{color:var(--text)}
+    .auth-tabs{display:flex;background:var(--bg3);border-radius:var(--r);padding:3px;margin-bottom:24px}
+    .auth-tab{flex:1;padding:8px;text-align:center;font-size:13px;font-weight:500;border:none;background:transparent;color:var(--text3);border-radius:6px;transition:all .2s}
+    .auth-tab.active{background:var(--bg2);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.4)}
+    .field{margin-bottom:16px}
+    .field label{display:block;font-size:11px;color:var(--text3);font-family:var(--mono);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px}
+    .field input,.field select{width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-size:14px;transition:border-color .2s}
+    .field input:focus,.field select:focus{outline:none;border-color:var(--purple2);box-shadow:0 0 0 3px rgba(124,58,237,.15)}
+    .field select option{background:var(--bg3)}
+    .auth-submit{width:100%;padding:12px;background:linear-gradient(135deg,var(--purple),var(--orange));border:none;border-radius:var(--r);color:#fff;font-size:14px;font-weight:600;box-shadow:0 0 20px rgba(124,58,237,.3);transition:all .2s;margin-top:4px}
+    .auth-submit:hover{box-shadow:0 0 35px rgba(124,58,237,.5);transform:translateY(-1px)}
+    .auth-submit:disabled{opacity:.5;cursor:not-allowed;transform:none}
+    .auth-err{font-size:12px;font-family:var(--mono);color:#F87171;margin-top:10px;min-height:18px;text-align:center}
+    .auth-ok{font-size:12px;font-family:var(--mono);color:#86EFAC;margin-top:10px;min-height:18px;text-align:center}
+
+    /* ── APP ── */
+    #app{position:fixed;inset:0;display:none;flex-direction:column;background:var(--bg)}
+    #app.show{display:flex}
+    #topbar{display:flex;align-items:center;gap:6px;padding:0 12px;height:48px;flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border);position:relative;z-index:10;overflow-x:auto}
+    .top-logo{display:flex;align-items:center;gap:7px;flex-shrink:0}
+    .top-logo img{width:24px;height:24px;object-fit:contain;filter:drop-shadow(0 0 6px rgba(249,115,22,.5))}
+    .top-logo-text{font-family:var(--display);font-size:15px;font-weight:800;letter-spacing:-.5px;background:linear-gradient(90deg,var(--purple3),var(--orange2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .top-sep{width:1px;height:20px;background:var(--border);margin:0 3px;flex-shrink:0}
+    .tb-btn{display:flex;align-items:center;gap:4px;padding:4px 9px;border:1px solid var(--border);border-radius:var(--r);background:transparent;color:var(--text2);font-size:11px;font-weight:500;transition:all .15s;flex-shrink:0;white-space:nowrap}
+    .tb-btn:hover{border-color:var(--purple2);color:var(--text)}
+    .tb-btn.active{background:var(--purple);border-color:var(--purple);color:#fff}
+    .tb-btn:disabled{opacity:.3;cursor:not-allowed}
+    .tb-btn.orange{background:var(--orange);border-color:var(--orange);color:#fff}
+    .tb-btn.orange:hover{background:#EA6C0A}
+    .tb-btn.green{background:#059669;border-color:#059669;color:#fff}
+    .tb-btn.green:hover{background:#047857}
+    .tb-btn.zero-active{background:#EF4444;border-color:#EF4444;color:#fff}
+    .top-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0}
+    .user-chip{display:flex;align-items:center;gap:7px;padding:3px 10px 3px 5px;border:1px solid var(--border);border-radius:20px;background:var(--bg3)}
+    .user-avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--orange));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff}
+    .user-info{display:flex;flex-direction:column}
+    .user-name-top{font-size:11px;font-weight:600;color:var(--text);line-height:1.2}
+    .user-role-top{font-size:9px;font-family:var(--mono);color:var(--text3);line-height:1.2}
+    .role-pill{font-size:9px;font-family:var(--mono);font-weight:500;padding:2px 7px;border-radius:20px}
+    .role-pill.programmer{background:rgba(124,58,237,.2);color:var(--purple3);border:1px solid rgba(124,58,237,.3)}
+    .role-pill.assembler{background:rgba(249,115,22,.15);color:var(--orange2);border:1px solid rgba(249,115,22,.3)}
+    .role-pill.admin{background:rgba(249,115,22,.25);color:#FCD34D;border:1px solid rgba(252,211,77,.3)}
+    .logout-btn{padding:4px 9px;border:1px solid var(--border);border-radius:var(--r);background:transparent;color:var(--text3);font-size:11px;transition:all .15s}
+    .logout-btn:hover{border-color:#F87171;color:#F87171}
+    .admin-btn{padding:4px 9px;border:1px solid rgba(252,211,77,.3);border-radius:var(--r);background:rgba(252,211,77,.08);color:#FCD34D;font-size:11px;font-weight:500;transition:all .15s}
+    .admin-btn:hover{background:rgba(252,211,77,.15)}
+
+    /* ── MAIN LAYOUT ── */
+    #main-area{display:flex;flex:1;overflow:hidden}
+    #canvas-wrap{flex:1;position:relative;overflow:hidden;background:#050310}
+    #mat-canvas{display:block;cursor:crosshair;touch-action:none;user-select:none}
+
+    /* HUDs */
+    .hud{position:absolute;font-family:var(--mono);font-size:10px;background:rgba(8,6,15,.82);border:1px solid var(--border);padding:4px 12px;border-radius:20px;pointer-events:none;backdrop-filter:blur(4px)}
+    .hud-coords{bottom:12px;left:12px;color:var(--purple3)}
+    .hud-mode{top:12px;left:12px;color:var(--orange2);border-color:rgba(249,115,22,.3)}
+    .hud-readonly{top:12px;right:12px;color:#FCD34D;border-color:rgba(252,211,77,.3);display:none}
+    .hud-readonly.show{display:block}
+
+    /* Simulation HUD */
+    #sim-hud{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:none;gap:0;flex-direction:column;align-items:center;pointer-events:none;z-index:20}
+    #sim-hud.show{display:flex}
+    .sim-timer{font-family:var(--display);font-size:32px;font-weight:800;color:#fff;letter-spacing:-2px;text-shadow:0 0 20px rgba(249,115,22,.8),0 0 40px rgba(124,58,237,.5);line-height:1}
+    .sim-meta{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.6);margin-top:2px;text-align:center}
+    .sim-fll{font-family:var(--mono);font-size:11px;color:#F97316;margin-top:1px;font-weight:500}
+    .sim-bar{width:180px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;margin-top:6px;overflow:hidden}
+    .sim-bar-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--orange));border-radius:2px;transition:width .1s linear}
+
+    /* ── SIDEBAR ── */
+    #sidebar{width:236px;flex-shrink:0;display:flex;flex-direction:column;border-left:1px solid var(--border);background:var(--bg2);overflow:hidden}
+    .sb-section{padding:10px 12px;border-bottom:1px solid var(--border)}
+    .sb-label{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+    .sb-input{width:100%;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-size:12px;transition:border-color .15s}
+    .sb-input:focus{outline:none;border-color:var(--purple2)}
+    .sb-row{display:flex;gap:5px;margin-top:6px}
+    .sb-btn{flex:1;padding:6px 8px;border:1px solid var(--border);border-radius:var(--r);background:transparent;color:var(--text2);font-size:11px;font-weight:500;transition:all .15s;white-space:nowrap}
+    .sb-btn:hover{border-color:var(--purple2);color:var(--text)}
+    .sb-btn.primary{background:var(--purple);border-color:var(--purple);color:#fff}
+    .sb-btn.primary:hover{background:#6D28D9}
+    .sb-btn:disabled{opacity:.3;cursor:not-allowed}
+
+    /* Color swatches */
+    .color-row{display:flex;align-items:center;gap:6px;margin-top:8px}
+    .color-label{font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px}
+    .color-swatches{display:flex;gap:4px;flex-wrap:wrap}
+    .color-swatch{width:16px;height:16px;border-radius:4px;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0}
+    .color-swatch:hover{transform:scale(1.2)}
+    .color-swatch.active{border-color:#fff;box-shadow:0 0 6px rgba(255,255,255,.4)}
+    .color-pick-wrap{display:flex;align-items:center;gap:4px;margin-left:auto}
+    #mission-color-input{width:24px;height:24px;padding:0;border:none;background:none;cursor:pointer;border-radius:4px;overflow:hidden}
+
+    /* Missions list */
+    .missions-scroll{max-height:120px;overflow-y:auto}
+    .mission-item{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:var(--r);cursor:pointer;font-size:11px;color:var(--text2);transition:all .15s;margin-bottom:2px}
+    .mission-item:hover{background:var(--bg3);color:var(--text)}
+    .mission-item.active{background:rgba(124,58,237,.15);color:var(--purple3)}
+    .mi-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .mi-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--mono)}
+    .mi-del{opacity:0;color:#F87171;font-size:14px;line-height:1;border:none;background:none;padding:0}
+    .mission-item:hover .mi-del{opacity:1}
+
+    /* Steps panel */
+    #steps-scroll{flex:1;overflow-y:auto;padding:8px}
+    .step-item{display:flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);margin-bottom:3px;font-size:11px;font-family:var(--mono);color:var(--text2);background:var(--bg3);transition:border-color .15s;cursor:pointer}
+    .step-item:hover{border-color:var(--border2)}
+    .step-item.selected{border-color:var(--purple2);background:rgba(124,58,237,.1)}
+    .step-n{color:var(--text3);min-width:14px;font-size:10px}
+    .step-tag{font-size:9px;padding:1px 5px;border-radius:8px;font-weight:600;flex-shrink:0}
+    .step-tag.ir{background:rgba(124,58,237,.2);color:var(--purple3);border:1px solid rgba(124,58,237,.3)}
+    .step-tag.trk{background:rgba(59,130,246,.2);color:#93C5FD;border:1px solid rgba(59,130,246,.3)}
+    .step-tag.gmu{background:rgba(16,185,129,.2);color:#6EE7B7;border:1px solid rgba(16,185,129,.3)}
+    .step-tag.gmd{background:rgba(245,158,11,.2);color:#FCD34D;border:1px solid rgba(245,158,11,.3)}
+    .step-tag.avc{background:rgba(236,72,153,.2);color:#F9A8D4;border:1px solid rgba(236,72,153,.3)}
+    .step-desc{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .step-del{opacity:0;color:#F87171;font-size:12px;line-height:1;border:none;background:none;padding:0}
+    .step-item:hover .step-del{opacity:1}
+    .steps-empty{text-align:center;padding:20px 8px;font-size:11px;font-family:var(--mono);color:var(--text3);line-height:1.8}
+
+    /* Sim controls */
+    .sim-section{padding:10px 12px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.15)}
+    .sim-controls{display:flex;gap:4px;align-items:center}
+    .sim-play{flex:1;padding:7px 10px;border:none;border-radius:var(--r);font-size:12px;font-weight:600;background:linear-gradient(135deg,#059669,#0D9488);color:#fff;transition:all .2s}
+    .sim-play:hover{opacity:.85}
+    .sim-play:disabled{opacity:.3;cursor:not-allowed}
+    .sim-stop{padding:7px 10px;border:1px solid var(--border);border-radius:var(--r);background:transparent;color:var(--text2);font-size:11px;transition:all .15s}
+    .sim-stop:hover{border-color:#F87171;color:#F87171}
+    .sim-speed{padding:5px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text2);font-size:11px;font-family:var(--mono)}
+
+
+    /* Action controls */
+    .action-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:6px}
+    .action-btn{padding:7px 6px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--text2);font-size:10.5px;font-weight:600;transition:all .15s;text-align:center}
+    .action-btn:hover{border-color:var(--purple2);color:var(--text);transform:translateY(-1px)}
+    .action-btn.green{border-color:rgba(16,185,129,.35);color:#6EE7B7}
+    .action-btn.gold{border-color:rgba(245,158,11,.35);color:#FCD34D}
+    .action-btn.red{border-color:rgba(239,68,68,.35);color:#FCA5A5}
+    .action-btn.pink{border-color:rgba(236,72,153,.35);color:#F9A8D4}
+    .hint-mini{font-family:var(--mono);font-size:9px;color:var(--text3);line-height:1.45;margin-top:7px}
+
+    /* ── BOTTOMBAR ── */
+    #bottombar{display:flex;gap:8px;padding:8px 14px;background:var(--bg2);border-top:1px solid var(--border);flex-shrink:0}
+    .bottom-btn{flex:1;padding:9px;border-radius:var(--r);border:none;font-size:13px;font-weight:600;transition:all .2s}
+    .bottom-btn.primary{background:linear-gradient(135deg,var(--purple),var(--orange));color:#fff;box-shadow:0 0 20px rgba(124,58,237,.3)}
+    .bottom-btn.primary:hover{box-shadow:0 0 35px rgba(124,58,237,.5)}
+    .bottom-btn.secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+    .bottom-btn.secondary:hover{border-color:var(--border2);color:var(--text)}
+
+    /* ── CODE MODAL ── */
+    #code-modal{position:fixed;inset:0;background:rgba(8,6,15,.88);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;z-index:600;padding:20px}
+    #code-modal.show{display:flex}
+    #code-box{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);width:100%;max-width:700px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 80px rgba(124,58,237,.3);animation:modal-in .3s ease}
+    #code-box header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border)}
+    #code-box header span{font-family:var(--mono);font-size:12px;color:var(--purple3)}
+    .code-close{background:none;border:none;color:var(--text3);font-size:20px;line-height:1}
+    .code-close:hover{color:var(--text)}
+    #code-out{flex:1;overflow:auto;padding:18px;font-size:11.5px;line-height:1.8;font-family:var(--mono);color:#C4A8FF;background:#050210;white-space:pre}
+    #code-box footer{padding:10px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+    .copy-btn{padding:8px 20px;background:linear-gradient(135deg,var(--purple),var(--orange));border:none;border-radius:var(--r);color:#fff;font-size:12px;font-family:var(--mono);font-weight:500}
+    .copy-btn:hover{opacity:.9}
+
+    /* ── ADMIN MODAL ── */
+    #admin-modal{position:fixed;inset:0;background:rgba(8,6,15,.9);backdrop-filter:blur(12px);display:none;align-items:flex-start;justify-content:center;z-index:700;padding:20px;overflow-y:auto}
+    #admin-modal.show{display:flex}
+    #admin-box{background:var(--bg2);border:1px solid rgba(252,211,77,.3);border-radius:var(--r2);width:100%;max-width:820px;margin:auto;box-shadow:0 0 80px rgba(252,211,77,.1);animation:modal-in .3s ease;overflow:hidden}
+    #admin-box header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);background:linear-gradient(90deg,rgba(252,211,77,.05),transparent)}
+    .admin-title{font-family:var(--display);font-size:18px;font-weight:800;color:#FCD34D;letter-spacing:-.5px}
+    .admin-body{padding:24px}
+    .admin-section-title{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:12px;margin-top:20px}
+    .admin-section-title:first-child{margin-top:0}
+    .admin-table{width:100%;border-collapse:collapse;font-size:12px}
+    .admin-table th{padding:8px 12px;text-align:left;font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border)}
+    .admin-table td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text2);font-family:var(--mono)}
+    .admin-table tr:last-child td{border-bottom:none}
+    .admin-table tr:hover td{background:var(--bg3)}
+    .role-select{padding:4px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-size:11px;font-family:var(--mono)}
+    .save-role-btn{padding:4px 10px;background:var(--purple);border:none;border-radius:var(--r);color:#fff;font-size:11px;font-family:var(--mono)}
+    .save-role-btn:hover{background:#6D28D9}
+    .log-item{padding:8px 12px;border-radius:var(--r);background:var(--bg3);margin-bottom:4px;font-size:11px;font-family:var(--mono);display:flex;align-items:center;gap:10px}
+    .log-user{color:var(--purple3);min-width:100px}
+    .log-action{color:var(--text2);flex:1}
+    .log-time{color:var(--text3);font-size:10px;white-space:nowrap}
+    .admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+    .stat-card{padding:16px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);text-align:center}
+    .stat-num{font-family:var(--display);font-size:28px;font-weight:800;color:var(--purple3)}
+    .stat-label{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+
+    /* ── WELCOME + TOAST ── */
+    #welcome-banner{position:absolute;top:60px;left:50%;transform:translate(-50%,-10px) scale(.98);z-index:40;min-width:min(520px,calc(100vw - 32px));padding:14px 18px;border-radius:var(--r2);background:linear-gradient(135deg,rgba(124,58,237,.88),rgba(249,115,22,.88));border:1px solid rgba(255,255,255,.18);box-shadow:0 22px 70px rgba(124,58,237,.35);color:#fff;opacity:0;pointer-events:none;transition:opacity .28s ease,transform .28s ease;backdrop-filter:blur(10px)}
+    #welcome-banner.show{opacity:1;transform:translate(-50%,0) scale(1)}
+    .welcome-main{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;letter-spacing:-.2px}
+    .welcome-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.16);box-shadow:inset 0 0 0 1px rgba(255,255,255,.16)}
+    .welcome-sub{margin-top:4px;margin-left:44px;font-size:12px;color:rgba(255,255,255,.78);font-family:var(--mono)}
+    #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:9px 22px;font-size:12px;font-family:var(--mono);color:var(--purple3);opacity:0;transition:opacity .3s;pointer-events:none;z-index:900;box-shadow:0 0 20px var(--glow)}
+    #toast.show{opacity:1}
+    #toast.err{color:#F87171;border-color:rgba(248,113,113,.4)}
+    #toast.ok{color:#86EFAC;border-color:rgba(134,239,172,.4)}
   </style>
 </head>
-
 <body>
 
-  <!-- ═══════════════════ LANDING ═══════════════════ -->
-  <div id="landing">
-    <section class="hero">
-      <div class="hero-bg">
-        <div class="hero-orb orb1"></div>
-        <div class="hero-orb orb2"></div>
-        <div class="hero-orb orb3"></div>
+<!-- ═══════════════════ LANDING ═══════════════════ -->
+<div id="landing">
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="hero-orb orb1"></div>
+      <div class="hero-orb orb2"></div>
+      <div class="hero-orb orb3"></div>
+    </div>
+    <div class="hero-content">
+      <div class="shark-logo">
+        <img src="sharks.png" alt="Sharks" onerror="this.style.display='none'" />
+        <span class="shark-logo-text">Sharks FLL</span>
       </div>
-      <div class="hero-content">
-        <div class="shark-logo">
-          <img src="sharks.png" alt="Sharks" onerror="this.style.display='none'" />
-          <span class="shark-logo-text">Sharks FLL</span>
-        </div>
-        <h1>
-          <span class="line1">Visual</span>
-          <span class="line2">SharksPeak</span>
-        </h1>
-        <p class="hero-sub">
-          Desenhe trajetórias diretamente no tapete FLL e gere o código Python para o Pybricks instantaneamente. O nível
-          máximo de programação da equipe Sharks.
-        </p>
-        <div class="hero-ctas">
-          <button class="btn-primary" onclick="openAuth('login')">Entrar na plataforma →</button>
-          <button class="btn-ghost" onclick="openAuth('register')">Criar conta</button>
-        </div>
-        <div class="preview-strip">
-          <div class="preview-mat">
-            <svg viewBox="0 0 700 338" xmlns="http://www.w3.org/2000/svg"
-              style="width:100%;display:block;border-radius:12px;">
-              <defs>
-                <linearGradient id="matbg" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="#0c0820" />
-                  <stop offset="100%" stop-color="#130f28" />
-                </linearGradient>
-                <linearGradient id="pathgrad" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stop-color="#7C3AED" />
-                  <stop offset="100%" stop-color="#F97316" />
-                </linearGradient>
-                <filter id="glow">
-                  <feGaussianBlur stdDeviation="3" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-              </defs>
-              <!-- background -->
-              <rect width="700" height="338" fill="url(#matbg)" rx="12" />
-              <!-- grid -->
-              <g stroke="rgba(124,58,237,0.12)" stroke-width="0.5">
-                <line x1="70" y1="0" x2="70" y2="338" />
-                <line x1="140" y1="0" x2="140" y2="338" />
-                <line x1="210" y1="0" x2="210" y2="338" />
-                <line x1="280" y1="0" x2="280" y2="338" />
-                <line x1="350" y1="0" x2="350" y2="338" />
-                <line x1="420" y1="0" x2="420" y2="338" />
-                <line x1="490" y1="0" x2="490" y2="338" />
-                <line x1="560" y1="0" x2="560" y2="338" />
-                <line x1="630" y1="0" x2="630" y2="338" />
-                <line x1="0" y1="67.6" x2="700" y2="67.6" />
-                <line x1="0" y1="135.2" x2="700" y2="135.2" />
-                <line x1="0" y1="202.8" x2="700" y2="202.8" />
-                <line x1="0" y1="270.4" x2="700" y2="270.4" />
-              </g>
-              <!-- border gradient -->
-              <rect width="700" height="338" fill="none" stroke="url(#pathgrad)" stroke-width="1.5" rx="12" />
-              <!-- demo path -->
-              <polyline points="40,298 120,200 240,220 380,100 520,150 650,60" fill="none" stroke="url(#pathgrad)"
-                stroke-width="2" stroke-dasharray="6,4" filter="url(#glow)" />
-              <!-- dots -->
-              <circle cx="40" cy="298" r="5" fill="#F97316" filter="url(#glow)" />
-              <circle cx="120" cy="200" r="4" fill="#9B5CF6" />
-              <circle cx="240" cy="220" r="4" fill="#9B5CF6" />
-              <circle cx="380" cy="100" r="4" fill="#9B5CF6" />
-              <circle cx="520" cy="150" r="4" fill="#9B5CF6" />
-              <circle cx="650" cy="60" r="5" fill="#F97316" filter="url(#glow)" />
-              <!-- labels -->
-              <text x="48" y="292" fill="white" font-size="9" font-family="monospace" opacity="0.8">1</text>
-              <text x="128" y="194" fill="white" font-size="9" font-family="monospace" opacity="0.8">2</text>
-              <text x="248" y="214" fill="white" font-size="9" font-family="monospace" opacity="0.8">3</text>
-              <text x="388" y="94" fill="white" font-size="9" font-family="monospace" opacity="0.8">4</text>
-              <text x="528" y="144" fill="white" font-size="9" font-family="monospace" opacity="0.8">5</text>
-              <text x="658" y="54" fill="white" font-size="9" font-family="monospace" opacity="0.8">6</text>
-              <!-- origin label -->
-              <text x="48" y="315" fill="rgba(249,115,22,0.7)" font-size="8" font-family="monospace">origem</text>
-              <!-- axis labels -->
-              <text x="65" y="333" fill="rgba(90,78,122,0.7)" font-size="8" font-family="monospace">200</text>
-              <text x="275" y="333" fill="rgba(90,78,122,0.7)" font-size="8" font-family="monospace">800</text>
-              <text x="555" y="333" fill="rgba(90,78,122,0.7)" font-size="8" font-family="monospace">1600</text>
-              <!-- overlay fade bottom -->
-              <defs>
-                <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="50%" stop-color="transparent" />
-                  <stop offset="100%" stop-color="#08060f" />
-                </linearGradient>
-              </defs>
-              <rect width="700" height="338" fill="url(#fade)" rx="12" />
-            </svg>
-            <div class="preview-mat-overlay"></div>
-          </div>
+      <h1><span class="line1">Visual</span><span class="line2">SharksPeak</span></h1>
+      <p class="hero-sub">Desenhe trajetórias diretamente no tapete FLL e gere o código Python para o Pybricks instantaneamente. O nível máximo de programação da equipe Sharks.</p>
+      <div class="hero-ctas">
+        <button class="btn-primary" onclick="openAuth('login')">Entrar na plataforma →</button>
+        <button class="btn-ghost" onclick="openAuth('register')">Criar conta</button>
+      </div>
+      <div class="preview-strip">
+        <div class="preview-mat">
+          <svg viewBox="0 0 700 338" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;border-radius:12px;">
+            <defs>
+              <linearGradient id="matbg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#0c0820"/><stop offset="100%" stop-color="#130f28"/>
+              </linearGradient>
+              <linearGradient id="pathgrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#7C3AED"/><stop offset="100%" stop-color="#F97316"/>
+              </linearGradient>
+              <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <rect width="700" height="338" fill="url(#matbg)" rx="12"/>
+            <g stroke="rgba(124,58,237,0.12)" stroke-width="0.5">
+              <line x1="70" y1="0" x2="70" y2="338"/><line x1="140" y1="0" x2="140" y2="338"/><line x1="210" y1="0" x2="210" y2="338"/>
+              <line x1="280" y1="0" x2="280" y2="338"/><line x1="350" y1="0" x2="350" y2="338"/><line x1="420" y1="0" x2="420" y2="338"/>
+              <line x1="0" y1="67.6" x2="700" y2="67.6"/><line x1="0" y1="135.2" x2="700" y2="135.2"/>
+              <line x1="0" y1="202.8" x2="700" y2="202.8"/>
+            </g>
+            <rect width="700" height="338" fill="none" stroke="url(#pathgrad)" stroke-width="1.5" rx="12"/>
+            <polyline points="40,298 120,200 240,220 380,100 520,150 650,60" fill="none" stroke="url(#pathgrad)" stroke-width="2" stroke-dasharray="6,4" filter="url(#glow)"/>
+            <circle cx="40" cy="298" r="5" fill="#F97316" filter="url(#glow)"/>
+            <circle cx="120" cy="200" r="4" fill="#9B5CF6"/><circle cx="240" cy="220" r="4" fill="#9B5CF6"/>
+            <circle cx="380" cy="100" r="4" fill="#9B5CF6"/><circle cx="520" cy="150" r="4" fill="#9B5CF6"/>
+            <circle cx="650" cy="60" r="5" fill="#F97316" filter="url(#glow)"/>
+            <defs><linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="50%" stop-color="transparent"/><stop offset="100%" stop-color="#08060f"/></linearGradient></defs>
+            <rect width="700" height="338" fill="url(#fade)" rx="12"/>
+          </svg>
+          <div class="preview-mat-overlay"></div>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="features">
-      <div class="section-label">funcionalidades</div>
-      <div class="section-title">Tudo que a equipe precisa</div>
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feat-icon">🗺️</div>
-          <div class="feat-title">Tapete FLL Real</div>
-          <div class="feat-desc">Visualize e clique diretamente no tapete em escala 1:1, com coordenadas em milímetros.
-          </div>
-        </div>
-        <div class="feature-card">
-          <div class="feat-icon">✏️</div>
-          <div class="feat-title">Dois modos de entrada</div>
-          <div class="feat-desc">Clique ponto a ponto ou desenhe segurando o mouse. Ambos geram trajetórias precisas.
-          </div>
-        </div>
-        <div class="feature-card">
-          <div class="feat-icon">⚡</div>
-          <div class="feat-title">Código instantâneo</div>
-          <div class="feat-desc">Gera o script completo com odometria, PID e IR_PARA prontos para colar no Pybricks.
-          </div>
-        </div>
-        <div class="feature-card">
-          <div class="feat-icon">☁️</div>
-          <div class="feat-title">Missões na nuvem</div>
-          <div class="feat-desc">Salve e carregue missões de qualquer dispositivo. Toda a equipe acessa em tempo real.
-          </div>
-        </div>
-        <div class="feature-card">
-          <div class="feat-icon">🔐</div>
-          <div class="feat-title">Controle de acesso</div>
-          <div class="feat-desc">Programadores editam. Montadores visualizam. Admins gerenciam tudo.</div>
-        </div>
-        <div class="feature-card">
-          <div class="feat-icon">🦈</div>
-          <div class="feat-title">Feito pelos Sharks</div>
-          <div class="feat-desc">Desenvolvido internamente para maximizar a eficiência da equipe na temporada FLL.</div>
+  <section class="features">
+    <div class="section-label">funcionalidades</div>
+    <div class="section-title">Tudo que a equipe precisa</div>
+    <div class="features-grid">
+      <div class="feature-card"><div class="feat-icon">🗺️</div><div class="feat-title">Tapete FLL Real</div><div class="feat-desc">Visualize e clique diretamente no tapete em escala 1:1, com coordenadas em milímetros.</div></div>
+      <div class="feature-card"><div class="feat-icon">🎨</div><div class="feat-title">Trajetórias Coloridas</div><div class="feat-desc">Cada missão tem sua cor. Separe visualmente as rotas de saída com cores distintas.</div></div>
+      <div class="feature-card"><div class="feat-icon">⚡</div><div class="feat-title">Código instantâneo</div><div class="feat-desc">Gera o script completo com odometria, PID e IR_PARA prontos para colar no Pybricks.</div></div>
+      <div class="feature-card"><div class="feat-icon">▶</div><div class="feat-title">Simulação com Timer</div><div class="feat-desc">Simule o robô percorrendo a trajetória com timer FLL (2:30) em tempo real.</div></div>
+      <div class="feature-card"><div class="feat-icon">📍</div><div class="feat-title">Ponto Zero Livre</div><div class="feat-desc">Defina onde o robô começa no tapete e gere PA() com as coordenadas corretas.</div></div>
+      <div class="feature-card"><div class="feat-icon">🦈</div><div class="feat-title">Feito pelos Sharks</div><div class="feat-desc">Desenvolvido internamente para maximizar a eficiência da equipe Taubaté FLL.</div></div>
+    </div>
+  </section>
+
+  <section class="team-section">
+    <div class="section-label">nossa equipe</div>
+    <div class="section-title">Quem faz acontecer</div>
+    <div class="team-img-wrap">
+      <img src="equipe.png" alt="Equipe Sharks" onerror="this.style.display='none';this.nextElementSibling.style.display='none'" />
+      <div class="team-img-badge">🦈 Equipe Sharks — FLL Taubaté</div>
+    </div>
+  </section>
+
+  <footer class="landing-footer">© Sharks FLL — SharksPeak v3.0 &nbsp;·&nbsp; Desenvolvido com 🦈 pela equipe Taubaté</footer>
+</div>
+
+<!-- ═══════════════════ AUTH ═══════════════════ -->
+<div id="auth-modal">
+  <div class="auth-card">
+    <div class="auth-card-header">
+      <img src="sharks.png" alt="logo" onerror="this.style.display='none'" />
+      <div class="auth-card-title">Sharks<span>Peak</span></div>
+    </div>
+    <button class="auth-close" onclick="closeAuth()">×</button>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Entrar</button>
+      <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Cadastrar</button>
+    </div>
+    <div id="form-login">
+      <div class="field"><label>Email</label><input type="email" id="l-email" placeholder="sharks@fll.com" autocomplete="email" /></div>
+      <div class="field"><label>Senha</label><input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password" /></div>
+      <button class="auth-submit" id="btn-login" onclick="doLogin()">Entrar →</button>
+    </div>
+    <div id="form-register" style="display:none">
+      <div class="field"><label>Nome completo</label><input type="text" id="r-name" placeholder="Seu nome" /></div>
+      <div class="field"><label>Email</label><input type="email" id="r-email" placeholder="sharks@fll.com" autocomplete="email" /></div>
+      <div class="field"><label>Senha</label><input type="password" id="r-pass" placeholder="mín. 6 caracteres" autocomplete="new-password" /></div>
+      <div class="field"><label>Função na equipe</label>
+        <select id="r-role">
+          <option value="assembler">Montador — visualiza trajetórias</option>
+          <option value="programmer">Programador — cria e edita</option>
+        </select>
+      </div>
+      <button class="auth-submit" id="btn-register" onclick="doRegister()">Criar conta →</button>
+    </div>
+    <div class="auth-err" id="auth-err"></div>
+    <div class="auth-ok" id="auth-ok"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ APP ═══════════════════ -->
+<div id="app">
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <div class="top-logo">
+      <img src="sharks.png" alt="logo" onerror="this.style.display='none'" />
+      <span class="top-logo-text">SharksPeak</span>
+    </div>
+    <div class="top-sep"></div>
+    <button class="tb-btn active" id="btn-mode-click" onclick="setMode('click')">◉ Clicar</button>
+    <button class="tb-btn" id="btn-mode-draw" onclick="setMode('draw')">⌀ Desenhar</button>
+    <div class="top-sep"></div>
+    <button class="tb-btn" id="btn-zero" onclick="setMode('zero')" title="Definir onde o robô começa">📍 Ponto Zero</button>
+    <div class="top-sep"></div>
+    <button class="tb-btn" id="btn-undo" onclick="undoLast()">↩ Desfazer</button>
+    <button class="tb-btn" id="btn-clear" onclick="clearCanvas()">⌫ Limpar</button>
+    <div class="top-right">
+      <button class="admin-btn" id="admin-btn" onclick="openAdmin()" style="display:none">⚙ Admin</button>
+      <div class="user-chip">
+        <div class="user-avatar" id="user-avatar-initials"></div>
+        <div class="user-info">
+          <span class="user-name-top" id="user-name-top"></span>
+          <span class="user-role-top" id="user-role-top"></span>
         </div>
       </div>
-    </section>
-
-    <section class="team-section">
-      <div class="section-label">nossa equipe</div>
-      <div class="section-title">Quem faz acontecer</div>
-      <div class="team-img-wrap">
-        <img src="equipe.png" alt="Equipe Sharks"
-          onerror="this.style.display='none';this.nextElementSibling.style.display='none';" />
-        <div class="team-img-badge">🦈 Equipe Sharks — FLL</div>
-      </div>
-    </section>
-
-    <footer class="landing-footer">
-      © Sharks FLL — SharksPeak v2.0 &nbsp;·&nbsp; Desenvolvido com 🦈 pela equipe
-    </footer>
+      <span class="role-pill" id="role-pill"></span>
+      <button class="logout-btn" onclick="doLogout()">sair</button>
+    </div>
   </div>
 
-  <!-- ═══════════════════ AUTH MODAL ═══════════════════ -->
-  <div id="auth-modal">
-    <div class="auth-card">
-      <div class="auth-card-header">
-        <img src="sharks.png" alt="logo" onerror="this.style.display='none'" />
-        <div class="auth-card-title">Sharks<span>Peak</span></div>
-      </div>
-      <button class="auth-close" onclick="closeAuth()">×</button>
+  <div id="welcome-banner" aria-live="polite">
+    <div class="welcome-main"><span class="welcome-icon">🦈</span><span>Seja bem-vindo, <strong id="welcome-name">Sharks</strong>!</span></div>
+    <div class="welcome-sub">Clique no tapete para criar pontos. Use 📍 Ponto Zero para definir a largada.</div>
+  </div>
 
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Entrar</button>
-        <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Cadastrar</button>
+  <!-- MAIN -->
+  <div id="main-area">
+    <div id="canvas-wrap">
+      <canvas id="mat-canvas"></canvas>
+      <div class="hud hud-coords" id="hud-coords">x: 0  y: 0 mm</div>
+      <div class="hud hud-mode" id="hud-mode">modo: clicar pontos</div>
+      <div class="hud hud-readonly" id="hud-readonly">🔒 somente visualização</div>
+
+      <!-- Simulation HUD -->
+      <div id="sim-hud">
+        <div class="sim-timer" id="sim-elapsed">0:00.0</div>
+        <div class="sim-fll" id="sim-fll-remain">FLL: 2:30 restante</div>
+        <div class="sim-meta" id="sim-meta">segmento 0 / 0</div>
+        <div class="sim-bar"><div class="sim-bar-fill" id="sim-bar-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+      <!-- Missions -->
+      <div class="sb-section">
+        <div class="sb-label">missão</div>
+        <input class="sb-input" id="mission-title-input" placeholder="nome da missão..." />
+        <!-- Color picker -->
+        <div class="color-row">
+          <span class="color-label">Cor:</span>
+          <div class="color-swatches" id="color-swatches"></div>
+          <div class="color-pick-wrap">
+            <input type="color" id="mission-color-input" value="#A77BFF" title="Cor personalizada" onchange="setMissionColor(this.value)" />
+          </div>
+        </div>
+        <div class="sb-row">
+          <button class="sb-btn primary" id="btn-save-mission" onclick="saveMission()">💾 Salvar</button>
+          <button class="sb-btn" id="btn-new-mission" onclick="newMission()">+ Nova</button>
+        </div>
+        <div class="missions-scroll" id="missions-list" style="margin-top:8px;"></div>
       </div>
 
-      <!-- LOGIN -->
-      <div id="form-login">
-        <div class="field">
-          <label>Email</label>
-          <input type="email" id="l-email" placeholder="sharks@fll.com" autocomplete="email" />
-        </div>
-        <div class="field">
-          <label>Senha</label>
-          <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password" />
-        </div>
-        <button class="auth-submit" id="btn-login" onclick="doLogin()">Entrar →</button>
-      </div>
-
-      <!-- REGISTER -->
-      <div id="form-register" style="display:none">
-        <div class="field">
-          <label>Nome completo</label>
-          <input type="text" id="r-name" placeholder="Seu nome" />
-        </div>
-        <div class="field">
-          <label>Email</label>
-          <input type="email" id="r-email" placeholder="sharks@fll.com" autocomplete="email" />
-        </div>
-        <div class="field">
-          <label>Senha</label>
-          <input type="password" id="r-pass" placeholder="mín. 6 caracteres" autocomplete="new-password" />
-        </div>
-        <div class="field">
-          <label>Função na equipe</label>
-          <select id="r-role">
-            <option value="assembler">Montador — visualiza trajetórias</option>
-            <option value="programmer">Programador — cria e edita</option>
+      <!-- Simulation -->
+      <div class="sim-section">
+        <div class="sb-label">simulação</div>
+        <div class="sim-controls">
+          <button class="sim-play" id="btn-sim-play" onclick="toggleSim()">▶ Simular</button>
+          <button class="sim-stop" onclick="stopSim()">■</button>
+          <select class="sim-speed" id="sim-speed-sel" title="Velocidade da simulação">
+            <option value="1">1×</option>
+            <option value="2" selected>2×</option>
+            <option value="4">4×</option>
+            <option value="8">8×</option>
           </select>
         </div>
-        <button class="auth-submit" id="btn-register" onclick="doRegister()">Criar conta →</button>
       </div>
 
-      <div class="auth-err" id="auth-err"></div>
-      <div class="auth-ok" id="auth-ok"></div>
-    </div>
-  </div>
 
-  <!-- ═══════════════════ APP ═══════════════════ -->
-  <div id="app">
-    <!-- TOPBAR -->
-    <div id="topbar">
-      <div class="top-logo">
-        <img src="sharks.png" alt="logo" onerror="this.style.display='none'" />
-        <span class="top-logo-text">SharksPeak</span>
-      </div>
-      <div class="top-sep"></div>
-      <button class="tb-btn active" id="btn-mode-click" onclick="setMode('click')">◉ Clicar</button>
-      <button class="tb-btn" id="btn-mode-draw" onclick="setMode('draw')">⌀ Desenhar</button>
-      <div class="top-sep"></div>
-      <button class="tb-btn" id="btn-undo" onclick="undoLast()">↩ Desfazer</button>
-      <button class="tb-btn" id="btn-clear" onclick="clearCanvas()">⌫ Limpar</button>
-      <div class="top-right">
-        <button class="admin-btn" id="admin-btn" onclick="openAdmin()" style="display:none">⚙ Admin</button>
-        <div class="user-chip">
-          <div class="user-avatar" id="user-avatar-initials"></div>
-          <div class="user-info">
-            <span class="user-name-top" id="user-name-top"></span>
-            <span class="user-role-top" id="user-role-top"></span>
-          </div>
+      <!-- Actions -->
+      <div class="sb-section">
+        <div class="sb-label">ações da saída</div>
+        <div class="action-grid">
+          <button class="action-btn red" onclick="addActionStep('T')">↧ Recuar</button>
+          <button class="action-btn pink" onclick="addActionStep('A')">↥ Avançar</button>
+          <button class="action-btn green" onclick="addActionStep('GMU')">↺ Motor U</button>
+          <button class="action-btn gold" onclick="addActionStep('GMD')">↻ Motor D</button>
+          <button class="action-btn" onclick="addActionStep('V')">⟳ Virar</button>
+          <button class="action-btn" onclick="addActionStep('W')">⏱ Esperar</button>
         </div>
-        <span class="role-pill" id="role-pill"></span>
-        <button class="logout-btn" onclick="doLogout()">sair</button>
-      </div>
-    </div>
-
-    <div id="welcome-banner" aria-live="polite">
-      <div class="welcome-main"><span class="welcome-icon">🦈</span><span>Seja bem-vindo, <strong
-            id="welcome-name">Sharks</strong>!</span></div>
-      <div class="welcome-sub">Clique no tapete para criar pontos ou use o modo desenhar para traçar a rota.</div>
-    </div>
-
-    <!-- MAIN -->
-    <div id="main-area">
-      <div id="canvas-wrap">
-        <canvas id="mat-canvas"></canvas>
-        <div class="hud-coords" id="hud-coords">x: 0 y: 0 mm</div>
-        <div class="hud-mode" id="hud-mode">modo: clicar pontos</div>
-        <div class="hud-readonly" id="hud-readonly">🔒 somente visualização</div>
+        <div class="hint-mini">Dica: clique em uma etapa da lista para editar valores. A cor separa cada saída/missão.</div>
       </div>
 
-      <div id="sidebar">
-        <!-- missions -->
-        <div class="sb-section">
-          <div class="sb-label">missões salvas</div>
-          <input class="sb-input" id="mission-title-input" placeholder="nome da missão..." />
-          <div class="sb-row">
-            <button class="sb-btn primary" id="btn-save-mission" onclick="saveMission()">💾 Salvar</button>
-            <button class="sb-btn" id="btn-new-mission" onclick="newMission()">+ Nova</button>
-          </div>
-          <div class="missions-scroll" id="missions-list" style="margin-top:10px;"></div>
-        </div>
-        <!-- steps -->
-        <div class="sb-label" style="padding:10px 12px 0;">trajetória</div>
-        <div id="steps-scroll">
-          <div id="steps-list"></div>
-          <div id="steps-empty" class="steps-empty">
-            Clique no tapete<br />para adicionar pontos
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- BOTTOMBAR -->
-    <div id="bottombar">
-      <button class="bottom-btn secondary" onclick="newMission()">Nova trajetória</button>
-      <button class="bottom-btn primary" onclick="generateCode()">{ } Gerar código Python</button>
-    </div>
-  </div>
-
-  <!-- CODE MODAL -->
-  <div id="code-modal">
-    <div id="code-box">
-      <header>
-        <span>// SharksPeak — código gerado</span>
-        <button class="code-close" onclick="closeCode()">×</button>
-      </header>
-      <pre id="code-out"></pre>
-      <footer>
-        <button class="code-close"
-          style="padding:8px 16px;border:1px solid var(--border);border-radius:var(--r);color:var(--text2);font-size:12px;"
-          onclick="closeCode()">Fechar</button>
-        <button class="copy-btn" onclick="copyCode()">Copiar código</button>
-      </footer>
-    </div>
-  </div>
-
-  <!-- ADMIN MODAL -->
-  <div id="admin-modal">
-    <div id="admin-box">
-      <header>
-        <span class="admin-title">⚙ Painel Admin — SharksPeak</span>
-        <button class="code-close" onclick="closeAdmin()">×</button>
-      </header>
-      <div class="admin-body">
-        <!-- stats -->
-        <div class="admin-stats">
-          <div class="stat-card">
-            <div class="stat-num" id="stat-users">–</div>
-            <div class="stat-label">usuários</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-num" id="stat-missions">–</div>
-            <div class="stat-label">missões</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-num" id="stat-logs">–</div>
-            <div class="stat-label">ações registradas</div>
-          </div>
-        </div>
-
-        <!-- users table -->
-        <div class="admin-section-title">Gerenciar usuários</div>
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Email</th>
-              <th>Função</th>
-              <th>Desde</th>
-              <th>Ação</th>
-            </tr>
-          </thead>
-          <tbody id="admin-users-body"></tbody>
-        </table>
-
-        <!-- logs -->
-        <div class="admin-section-title" style="margin-top:24px;">Log de atividade (últimas 20 ações)</div>
-        <div id="admin-logs"></div>
+      <!-- Steps -->
+      <div class="sb-label" style="padding:8px 12px 0;">trajetória</div>
+      <div id="steps-scroll">
+        <div id="steps-list"></div>
+        <div id="steps-empty" class="steps-empty">Clique no tapete<br/>para adicionar pontos.<br/><span style="font-size:9px;color:var(--text3)">Use 📍 para definir o ponto zero.</span></div>
       </div>
     </div>
   </div>
 
-  <div id="toast"></div>
+  <!-- BOTTOMBAR -->
+  <div id="bottombar">
+    <button class="bottom-btn secondary" onclick="newMission()">Nova trajetória</button>
+    <button class="bottom-btn primary" onclick="generateCode()">{ } Gerar código Python</button>
+  </div>
+</div>
 
-  <script>
-    // ═══════════════════════════════════════════════════════
-    // CONFIG — substitua pelos seus dados do Supabase
-    // ═══════════════════════════════════════════════════════
-    const SUPABASE_URL = 'https://cplkamulohrojuhymojy.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwbGthbXVsb2hyb2p1aHltb2p5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNTczNzEsImV4cCI6MjA5MzkzMzM3MX0.CMoLhdzbnWJmX02SL_A8XYXnrj6qEt_joP-uBKiCzVs';
-    // ═══════════════════════════════════════════════════════
+<!-- CODE MODAL -->
+<div id="code-modal">
+  <div id="code-box">
+    <header>
+      <span>// SharksPeak — código gerado</span>
+      <button class="code-close" onclick="closeCode()">×</button>
+    </header>
+    <pre id="code-out"></pre>
+    <footer>
+      <button class="code-close" style="padding:8px 16px;border:1px solid var(--border);border-radius:var(--r);color:var(--text2);font-size:12px;" onclick="closeCode()">Fechar</button>
+      <button class="copy-btn" onclick="copyCode()">Copiar código</button>
+    </footer>
+  </div>
+</div>
 
-    const { createClient } = supabase;
-    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+<!-- ADMIN MODAL -->
+<div id="admin-modal">
+  <div id="admin-box">
+    <header>
+      <span class="admin-title">⚙ Painel Admin — SharksPeak</span>
+      <button class="code-close" onclick="closeAdmin()">×</button>
+    </header>
+    <div class="admin-body">
+      <div class="admin-stats">
+        <div class="stat-card"><div class="stat-num" id="stat-users">–</div><div class="stat-label">usuários</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-missions">–</div><div class="stat-label">missões</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-logs">–</div><div class="stat-label">ações registradas</div></div>
+      </div>
+      <div class="admin-section-title">Gerenciar usuários</div>
+      <table class="admin-table">
+        <thead><tr><th>Nome</th><th>Email</th><th>Função</th><th>Desde</th><th>Ação</th></tr></thead>
+        <tbody id="admin-users-body"></tbody>
+      </table>
+      <div class="admin-section-title" style="margin-top:24px;">Log de atividade (últimas 20 ações)</div>
+      <div id="admin-logs"></div>
+    </div>
+  </div>
+</div>
 
-    // ─── STATE ───────────────────────────────────────────
-    const FLL_W = 2362, FLL_H = 1143;
-    let canvas, ctx, wrap;
-    let scale = 1, offX = 0, offY = 0;
-    let mode = 'click';
-    let steps = [];
-    let isDrawing = false, lastDrawPt = null;
-    let currentUser = null, currentProfile = null;
-    let isProgrammer = false, isAdmin = false;
-    let currentMissionId = null;
-    let missions = [];
-    let matImg = null;
+<div id="toast"></div>
 
-    // ─── LANDING ──────────────────────────────────────────
-    function openAuth(tab) {
-      document.getElementById('auth-modal').classList.add('show');
-      switchAuthTab(tab);
+<script>
+// ═══════════════════════════════════════════════════════
+// CONFIG — substitua pelos seus dados do Supabase
+// ═══════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://cplkamulohrojuhymojy.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwbGthbXVsb2hyb2p1aHltb2p5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNTczNzEsImV4cCI6MjA5MzkzMzM3MX0.CMoLhdzbnWJmX02SL_A8XYXnrj6qEt_joP-uBKiCzVs';
+// ═══════════════════════════════════════════════════════
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ─── STATE ───────────────────────────────────────────
+const FLL_W = 2362, FLL_H = 1143;
+const FLL_MATCH_SEC = 150; // 2 min 30 s
+const ROBOT_SPEED_MM_S = 400; // velocidade estimada do robô em mm/s
+
+let canvas, ctx, wrap;
+let scale = 1, offX = 0, offY = 0;
+let mode = 'click'; // 'click' | 'draw' | 'zero'
+let steps = [];
+let isDrawing = false, lastDrawPt = null;
+let currentUser = null, currentProfile = null;
+let isProgrammer = false, isAdmin = false;
+let currentMissionId = null;
+let missions = [];
+let matImg = null;
+
+// Zero point (robot start)
+let zeroX = 0, zeroY = 0;
+
+// Mission color
+const PRESET_COLORS = ['#A77BFF','#F97316','#10B981','#3B82F6','#EF4444','#F59E0B','#EC4899','#14B8A6'];
+let missionColor = PRESET_COLORS[0];
+
+// Simulation state
+let simulating = false;
+let simPaused = false;
+let simAnimId = null;
+let simStartWall = null;  // performance.now() when sim (re)started
+let simElapsedAcc = 0;    // accumulated sim seconds before pauses
+
+// ─── COLOR SWATCHES ────────────────────────────────────
+function buildColorSwatches() {
+  const el = document.getElementById('color-swatches');
+  el.innerHTML = '';
+  PRESET_COLORS.forEach(c => {
+    const s = document.createElement('div');
+    s.className = 'color-swatch' + (c === missionColor ? ' active' : '');
+    s.style.background = c;
+    s.title = c;
+    s.onclick = () => setMissionColor(c);
+    el.appendChild(s);
+  });
+}
+
+function setMissionColor(c) {
+  missionColor = c;
+  document.getElementById('mission-color-input').value = c;
+  buildColorSwatches();
+  draw();
+}
+
+// ─── LANDING ─────────────────────────────────────────
+function openAuth(tab) {
+  document.getElementById('auth-modal').classList.add('show');
+  switchAuthTab(tab);
+}
+function closeAuth() { document.getElementById('auth-modal').classList.remove('show'); }
+function switchAuthTab(tab) {
+  ['login','register'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+    document.getElementById('form-' + t).style.display = t === tab ? '' : 'none';
+  });
+  document.getElementById('auth-err').textContent = '';
+  document.getElementById('auth-ok').textContent = '';
+}
+
+// ─── AUTH ────────────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById('l-email').value.trim();
+  const pass = document.getElementById('l-pass').value;
+  if (!email || !pass) return setAuthMsg('preencha email e senha', 'err');
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true; btn.textContent = 'entrando...';
+  setAuthMsg('','err');
+  try {
+    const loginP = sb.auth.signInWithPassword({ email, password: pass });
+    const timeoutP = new Promise((_,rej) => setTimeout(() => rej(new Error('Tempo limite. Verifique internet / Supabase.')), 12000));
+    const { data, error } = await Promise.race([loginP, timeoutP]);
+    if (error) { setAuthMsg(traduzir(error.message),'err'); return; }
+    if (!data?.session?.user) { setAuthMsg('Login OK, mas sem sessão. Confirme o email no Supabase.','err'); return; }
+    currentUser = data.session.user;
+    await loadProfileSafe();
+    enterApp();
+  } catch(err) {
+    setAuthMsg(err.message || 'Erro inesperado.','err');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Entrar →';
+  }
+}
+
+function traduzir(msg) {
+  const m = String(msg||'').toLowerCase();
+  if (m.includes('email not confirmed')) return 'Email não confirmado. Confirme no email ou desative "Confirm email" no Supabase.';
+  if (m.includes('invalid login credentials')) return 'Email ou senha incorretos.';
+  if (m.includes('failed to fetch')) return 'Falha de conexão. Verifique URL, anon key, CORS ou projeto pausado.';
+  return msg;
+}
+
+async function doRegister() {
+  const name = document.getElementById('r-name').value.trim();
+  const email = document.getElementById('r-email').value.trim();
+  const pass = document.getElementById('r-pass').value;
+  const role = document.getElementById('r-role').value;
+  if (!name || !email || !pass) return setAuthMsg('preencha todos os campos','err');
+  if (pass.length < 6) return setAuthMsg('senha mínima: 6 caracteres','err');
+  const btn = document.getElementById('btn-register');
+  btn.disabled = true; btn.textContent = 'criando conta...';
+  try {
+    const { data, error } = await sb.auth.signUp({ email, password: pass, options: { data: { name, role } } });
+    if (error) { setAuthMsg(traduzir(error.message),'err'); return; }
+    if (data?.session?.user) { currentUser = data.session.user; await loadProfileSafe(); enterApp(); return; }
+    setAuthMsg('✓ Conta criada! Confirme o email ou desative "Confirm email" no Supabase.','ok');
+  } catch(err) {
+    setAuthMsg(err.message || 'Erro inesperado.','err');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Criar conta →';
+  }
+}
+
+function setAuthMsg(msg, type) {
+  document.getElementById('auth-err').textContent = type === 'err' ? msg : '';
+  document.getElementById('auth-ok').textContent = type === 'ok' ? msg : '';
+}
+
+async function doLogout() {
+  stopSim();
+  await sb.auth.signOut();
+  currentUser = currentProfile = null;
+  isProgrammer = isAdmin = false;
+  steps = []; missions = []; currentMissionId = null;
+  zeroX = 0; zeroY = 0; missionColor = PRESET_COLORS[0];
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('landing').classList.remove('hide');
+}
+
+sb.auth.onAuthStateChange((event, session) => {
+  setTimeout(async () => {
+    if (session?.user && !document.getElementById('app').classList.contains('show')) {
+      try { currentUser = session.user; await loadProfileSafe(); enterApp(); }
+      catch(err) { setAuthMsg(err.message || 'Erro ao carregar sessão.','err'); }
     }
-    function closeAuth() {
-      document.getElementById('auth-modal').classList.remove('show');
+  }, 0);
+});
+
+async function loadProfileSafe() {
+  if (!currentUser?.id) throw new Error('Usuário não encontrado.');
+  const meta = currentUser.user_metadata || {};
+  const fallback = { id: currentUser.id, email: currentUser.email, name: meta.name || currentUser.email.split('@')[0], role: meta.role || 'assembler' };
+  try {
+    const profileP = sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
+    const toP = new Promise((_,rej) => setTimeout(() => rej(new Error('Perfil demorou. Verifique tabela profiles/RLS.')), 10000));
+    const { data, error } = await Promise.race([profileP, toP]);
+    if (error) { currentProfile = fallback; }
+    else if (data) { currentProfile = data; }
+    else {
+      const { data: created, error: ce } = await sb.from('profiles').insert(fallback).select('*').single();
+      currentProfile = ce ? fallback : created;
     }
-    function switchAuthTab(tab) {
-      ['login', 'register'].forEach(t => {
-        document.getElementById('tab-' + t).classList.toggle('active', t === tab);
-        document.getElementById('form-' + t).style.display = t === tab ? '' : 'none';
-      });
-      document.getElementById('auth-err').textContent = '';
-      document.getElementById('auth-ok').textContent = '';
+  } catch { currentProfile = fallback; }
+  isProgrammer = ['programmer','admin'].includes(currentProfile?.role);
+  isAdmin = currentProfile?.role === 'admin';
+}
+
+async function loadProfile() { return loadProfileSafe(); }
+
+function enterApp() {
+  closeAuth();
+  document.getElementById('landing').classList.add('hide');
+  const app = document.getElementById('app');
+  app.classList.add('show');
+
+  const name = currentProfile?.name || currentUser.email.split('@')[0];
+  const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('user-avatar-initials').textContent = initials;
+  document.getElementById('user-name-top').textContent = name;
+  document.getElementById('user-role-top').textContent = currentProfile?.role || 'assembler';
+
+  const pill = document.getElementById('role-pill');
+  pill.textContent = {admin:'👑 Admin',programmer:'💻 Programador',assembler:'🔧 Montador'}[currentProfile?.role] || 'montador';
+  pill.className = 'role-pill ' + (currentProfile?.role || 'assembler');
+
+  document.getElementById('admin-btn').style.display = isAdmin ? '' : 'none';
+
+  const editEls = ['btn-mode-click','btn-mode-draw','btn-undo','btn-clear','btn-save-mission','btn-new-mission','btn-zero','btn-sim-play'];
+  editEls.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = !isProgrammer; });
+  document.getElementById('hud-readonly').classList.toggle('show', !isProgrammer);
+
+  buildColorSwatches();
+  initCanvas();
+
+  requestAnimationFrame(() => { resize(); draw(); });
+  setTimeout(() => { resize(); draw(); }, 80);
+  setTimeout(() => { resize(); draw(); }, 350);
+
+  setTimeout(() => showWelcome(name), 220);
+  setTimeout(() => toast('🦈 Seja bem-vindo, ' + name + '!'), 550);
+
+  loadMissions();
+  logActivity('login', null, null, {});
+}
+
+// ─── ACTIVITY LOG ────────────────────────────────────
+async function logActivity(action, targetId, targetType, metadata) {
+  try { await sb.from('activity_logs').insert({ user_id: currentUser.id, action, target_id: targetId, target_type: targetType, metadata }); }
+  catch {}
+}
+
+// ─── MISSIONS ────────────────────────────────────────
+async function loadMissions() {
+  const { data } = await sb.from('missions').select('*').order('updated_at', { ascending: false });
+  missions = data || [];
+  renderMissions();
+}
+
+function renderMissions() {
+  const el = document.getElementById('missions-list');
+  if (!missions.length) { el.innerHTML = '<div style="font-size:11px;color:var(--text3);font-family:var(--mono);padding:6px 0;">nenhuma missão ainda</div>'; return; }
+  el.innerHTML = '';
+  missions.forEach(m => {
+    const d = document.createElement('div');
+    d.className = 'mission-item' + (m.id === currentMissionId ? ' active' : '');
+    const color = m.color || PRESET_COLORS[0];
+    d.innerHTML = `<span class="mi-dot" style="background:${color}"></span><span class="mi-name">${m.title}</span>${isProgrammer ? `<button class="mi-del" onclick="deleteMission('${m.id}',event)" title="Deletar">×</button>` : ''}`;
+    d.onclick = (e) => { if (e.target.classList.contains('mi-del')) return; loadMission(m); };
+    el.appendChild(d);
+  });
+}
+
+function loadMission(m) {
+  currentMissionId = m.id;
+  steps = Array.isArray(m.steps) ? m.steps : [];
+  missionColor = m.color || PRESET_COLORS[0];
+  document.getElementById('mission-title-input').value = m.title;
+  document.getElementById('mission-color-input').value = missionColor;
+  buildColorSwatches();
+  // Restore zero point if saved
+  if (m.zero_x !== undefined && m.zero_y !== undefined) {
+    zeroX = m.zero_x || 0;
+    zeroY = m.zero_y || 0;
+  }
+  stopSim();
+  renderSteps(); draw(); renderMissions();
+  toast('Missão carregada: ' + m.title);
+}
+
+async function saveMission() {
+  if (!isProgrammer) return;
+  const title = document.getElementById('mission-title-input').value.trim() || 'Nova Missão';
+  const payload = { title, steps, color: missionColor, updated_by: currentUser.id, zero_x: zeroX, zero_y: zeroY };
+  let error;
+  if (currentMissionId) {
+    ({ error } = await sb.from('missions').update(payload).eq('id', currentMissionId));
+  } else {
+    const { data, error: e } = await sb.from('missions').insert({ ...payload, created_by: currentUser.id }).select().single();
+    error = e;
+    if (data) currentMissionId = data.id;
+  }
+  if (error) {
+    toast('Erro ao salvar: ' + error.message, true);
+  } else {
+    toast('✓ Missão salva!');
+    logActivity('save_mission', currentMissionId, 'mission', { title });
+    await loadMissions();
+  }
+}
+
+async function deleteMission(id, e) {
+  e.stopPropagation();
+  if (!isProgrammer) return;
+  if (!confirm('Deletar esta missão?')) return;
+  await sb.from('missions').delete().eq('id', id);
+  logActivity('delete_mission', id, 'mission', {});
+  if (currentMissionId === id) newMission();
+  await loadMissions();
+  toast('Missão deletada');
+}
+
+function newMission() {
+  stopSim();
+  currentMissionId = null;
+  steps = [];
+  zeroX = 0; zeroY = 0;
+  missionColor = PRESET_COLORS[Math.floor(Math.random() * PRESET_COLORS.length)];
+  document.getElementById('mission-title-input').value = '';
+  document.getElementById('mission-color-input').value = missionColor;
+  buildColorSwatches();
+  renderSteps(); draw(); renderMissions();
+}
+
+// ─── CANVAS ──────────────────────────────────────────
+function initCanvas() {
+  canvas = document.getElementById('mat-canvas');
+  wrap = document.getElementById('canvas-wrap');
+  ctx = canvas.getContext('2d');
+
+  matImg = new Image();
+  matImg.onload = () => { resize(); draw(); };
+  matImg.onerror = () => { matImg = null; toast('tapete.png não encontrado — usando fundo branco', true); resize(); draw(); };
+  matImg.src = './tapete.png';
+
+  resize();
+  window.removeEventListener('resize', resize);
+  window.addEventListener('resize', resize);
+
+  if (!canvas.dataset.bound) {
+    canvas.addEventListener('pointerdown', onDown);
+    canvas.addEventListener('pointermove', onMove);
+    canvas.addEventListener('pointerup', onUp);
+    canvas.addEventListener('pointercancel', onUp);
+    canvas.addEventListener('pointerleave', onUp);
+    canvas.dataset.bound = 'true';
+  }
+}
+
+function resize() {
+  if (!canvas || !wrap) return;
+  const r = wrap.getBoundingClientRect();
+  if (r.width < 20 || r.height < 20) { setTimeout(resize, 80); return; }
+  canvas.width = Math.floor(r.width);
+  canvas.height = Math.floor(r.height);
+  scale = Math.min(canvas.width / FLL_W, canvas.height / FLL_H) * 0.92;
+  offX = (canvas.width - FLL_W * scale) / 2;
+  offY = (canvas.height - FLL_H * scale) / 2;
+  draw();
+}
+
+function toCanvas(rx, ry) { return [offX + rx * scale, offY + (FLL_H - ry) * scale]; }
+function toReal(cx, cy) { return [Math.round((cx - offX) / scale), Math.round(FLL_H - (cy - offY) / scale)]; }
+
+// Color helper: hex → rgba
+function hexToRgba(hex, a) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function draw(simPos) {
+  if (!canvas || !ctx) return;
+  const W = FLL_W * scale, H = FLL_H * scale;
+  if (!Number.isFinite(W) || W <= 0) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Background
+  ctx.fillStyle = '#08040f';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.save();
+  ctx.translate(offX, offY);
+
+  // Mat image or fallback
+  if (matImg && matImg.complete && matImg.naturalWidth > 0) {
+    ctx.drawImage(matImg, 0, 0, W, H);
+  } else {
+    ctx.fillStyle = '#f0ede8';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#333';
+    ctx.font = '16px JetBrains Mono, monospace';
+    ctx.fillText('tapete.png não encontrado', 20, 36);
+    ctx.font = '12px JetBrains Mono, monospace';
+    ctx.fillText('Coloque tapete.png na mesma pasta do index.html', 20, 60);
+  }
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(124,58,237,0.1)'; ctx.lineWidth = 0.5;
+  for (let x = 0; x <= FLL_W; x += 100) {
+    const cx = x * scale; ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, H); ctx.stroke();
+  }
+  for (let y = 0; y <= FLL_H; y += 100) {
+    const cy = y * scale; ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.stroke();
+  }
+
+  // Grid labels
+  ctx.fillStyle = 'rgba(90,78,122,0.6)';
+  ctx.font = `${Math.max(7, scale * 11)}px JetBrains Mono, monospace`;
+  for (let x = 0; x <= FLL_W; x += 200) ctx.fillText(x, x * scale + 3, H - 3);
+  for (let y = 200; y <= FLL_H; y += 200) ctx.fillText(y, 3, (FLL_H - y) * scale - 3);
+
+  // Border
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, 'rgba(124,58,237,0.8)');
+  grad.addColorStop(1, 'rgba(249,115,22,0.8)');
+  ctx.strokeStyle = grad; ctx.lineWidth = 1.5;
+  ctx.strokeRect(0, 0, W, H);
+
+  ctx.restore();
+
+  // Zero / origin marker
+  const [ox, oy] = toCanvas(zeroX, zeroY);
+  // Cross lines
+  ctx.strokeStyle = 'rgba(249,115,22,0.5)'; ctx.lineWidth = 1; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(ox - 14, oy); ctx.lineTo(ox + 14, oy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ox, oy - 14); ctx.lineTo(ox, oy + 14); ctx.stroke();
+  ctx.setLineDash([]);
+  // Glow
+  const og = ctx.createRadialGradient(ox, oy, 0, ox, oy, 10);
+  og.addColorStop(0, 'rgba(249,115,22,0.35)'); og.addColorStop(1, 'transparent');
+  ctx.beginPath(); ctx.arc(ox, oy, 10, 0, Math.PI*2);
+  ctx.fillStyle = og; ctx.fill();
+  // Dot
+  ctx.beginPath(); ctx.arc(ox, oy, 4, 0, Math.PI*2);
+  ctx.fillStyle = '#F97316'; ctx.fill();
+  ctx.fillStyle = 'rgba(249,115,22,0.85)';
+  ctx.font = '9px JetBrains Mono,monospace';
+  ctx.fillText(zeroX === 0 && zeroY === 0 ? 'zero (0,0)' : `zero (${zeroX},${zeroY})`, ox + 8, oy + 4);
+
+  // Path
+  if (!steps.length) return;
+
+  const mc = missionColor;
+  const mcDim = hexToRgba(mc, 0.55);
+  const mcBright = hexToRgba(mc, 0.9);
+
+  ctx.save();
+  let prev = toCanvas(zeroX, zeroY);
+
+  steps.forEach((s, i) => {
+    const [cx, cy] = toCanvas(s.x, s.y);
+
+    // Draw line
+    if (s.type === 'T') {
+      // Trás = dashed red line
+      ctx.beginPath(); ctx.moveTo(prev[0], prev[1]); ctx.lineTo(cx, cy);
+      ctx.strokeStyle = 'rgba(239,68,68,0.7)'; ctx.lineWidth = 2; ctx.setLineDash([3,5]); ctx.stroke();
+      ctx.setLineDash([]);
+    } else if (s.type === 'A') {
+      ctx.beginPath(); ctx.moveTo(prev[0], prev[1]); ctx.lineTo(cx, cy);
+      ctx.strokeStyle = mcDim; ctx.lineWidth = 2.5; ctx.setLineDash([8,3]); ctx.stroke();
+      ctx.setLineDash([]);
+    } else {
+      // IR_PARA — main color
+      const lg = ctx.createLinearGradient(prev[0], prev[1], cx, cy);
+      lg.addColorStop(0, hexToRgba(mc, 0.5));
+      lg.addColorStop(1, hexToRgba(mc, 0.85));
+      ctx.beginPath(); ctx.moveTo(prev[0], prev[1]); ctx.lineTo(cx, cy);
+      ctx.strokeStyle = lg; ctx.lineWidth = 2.5; ctx.setLineDash([6,4]); ctx.stroke();
+      ctx.setLineDash([]);
     }
 
-    // ─── AUTH ─────────────────────────────────────────────
-    async function doLogin() {
-      const email = document.getElementById('l-email').value.trim();
-      const pass = document.getElementById('l-pass').value;
-
-      if (!email || !pass) {
-        return setAuthMsg('preencha email e senha', 'err');
-      }
-
-      const btn = document.getElementById('btn-login');
-      btn.disabled = true;
-      btn.textContent = 'entrando...';
-      setAuthMsg('', 'err');
-
-      try {
-        const loginPromise = sb.auth.signInWithPassword({ email, password: pass });
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Tempo limite excedido. Verifique internet, URL/KEY do Supabase, CORS ou se o projeto Supabase está pausado.')), 12000);
-        });
-
-        const { data, error } = await Promise.race([loginPromise, timeoutPromise]);
-
-        if (error) {
-          setAuthMsg(traduzirErroSupabase(error.message), 'err');
-          return;
-        }
-
-        if (!data?.session?.user) {
-          setAuthMsg('Login aceito, mas nenhuma sessão foi retornada. Confira se o email está confirmado no Supabase.', 'err');
-          return;
-        }
-
-        currentUser = data.session.user;
-        await loadProfileSafe();
-        enterApp();
-
-      } catch (err) {
-        console.error('Erro no login:', err);
-        setAuthMsg(err.message || 'Erro inesperado ao fazer login.', 'err');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Entrar →';
-      }
+    // Arrow head (for IR_PARA)
+    if (s.type !== 'GMU' && s.type !== 'GMD') {
+      const angle = Math.atan2(cy - prev[1], cx - prev[0]);
+      const al = 8;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx - al * Math.cos(angle - 0.4), cy - al * Math.sin(angle - 0.4));
+      ctx.lineTo(cx - al * Math.cos(angle + 0.4), cy - al * Math.sin(angle + 0.4));
+      ctx.closePath();
+      ctx.fillStyle = s.type === 'T' ? 'rgba(239,68,68,0.7)' : mcBright;
+      ctx.fill();
     }
 
-    function traduzirErroSupabase(msg) {
-      const m = String(msg || '').toLowerCase();
-      if (m.includes('email not confirmed')) return 'Email ainda não confirmado. Confirme no email ou desative Confirm email em Authentication → Providers → Email.';
-      if (m.includes('invalid login credentials')) return 'Email ou senha incorretos.';
-      if (m.includes('failed to fetch')) return 'Falha de conexão com o Supabase. Verifique URL, anon key, CORS, internet ou projeto pausado.';
-      return msg;
+    // Glow halo
+    const isLast = i === steps.length - 1;
+    const hr = isLast ? 12 : 8;
+    const rg = ctx.createRadialGradient(cx, cy, 0, cx, cy, hr);
+    rg.addColorStop(0, hexToRgba(mc, isLast ? 0.45 : 0.25));
+    rg.addColorStop(1, 'transparent');
+    ctx.beginPath(); ctx.arc(cx, cy, hr, 0, Math.PI*2);
+    ctx.fillStyle = rg; ctx.fill();
+
+    // Dot
+    const dotR = isLast ? 5.5 : 4;
+    ctx.beginPath(); ctx.arc(cx, cy, dotR, 0, Math.PI*2);
+    ctx.fillStyle = isLast ? mc : hexToRgba(mc, 0.9);
+    ctx.fill();
+    ctx.strokeStyle = hexToRgba(mc, 0.4); ctx.lineWidth = 1.5; ctx.stroke();
+
+    // Step number
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.font = `bold ${Math.max(9,scale*13)}px JetBrains Mono,monospace`;
+    ctx.fillText(i + 1, cx + 8, cy - 5);
+
+    // Step type badge for special steps
+    if (s.type && s.type !== 'IR_PARA') {
+      ctx.font = `bold ${Math.max(8,scale*10)}px JetBrains Mono,monospace`;
+      const tagColor = { T:'#EF4444', GMU:'#10B981', GMD:'#F59E0B', A:'#EC4899' }[s.type] || mc;
+      ctx.fillStyle = tagColor;
+      ctx.fillText(s.type, cx + 8, cy + 10);
     }
 
-    async function doRegister() {
-      const name = document.getElementById('r-name').value.trim();
-      const email = document.getElementById('r-email').value.trim();
-      const pass = document.getElementById('r-pass').value;
-      const role = document.getElementById('r-role').value;
+    if (s.type !== 'GMU' && s.type !== 'GMD') prev = [cx, cy];
+  });
 
-      if (!name || !email || !pass) return setAuthMsg('preencha todos os campos', 'err');
-      if (pass.length < 6) return setAuthMsg('senha mínima: 6 caracteres', 'err');
+  ctx.restore();
 
-      const btn = document.getElementById('btn-register');
-      btn.disabled = true;
-      btn.textContent = 'criando conta...';
-      setAuthMsg('', 'err');
+  // ── Simulation robot ──
+  if (simPos) {
+    const [rx, ry] = toCanvas(simPos.x, simPos.y);
+    const ang = simPos.angle || 0; // radians
 
-      try {
-        const signupPromise = sb.auth.signUp({
-          email,
-          password: pass,
-          options: { data: { name, role } }
-        });
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Tempo limite excedido ao criar conta. Verifique Supabase/internet.')), 12000);
-        });
+    // Glow
+    const sg = ctx.createRadialGradient(rx, ry, 0, rx, ry, 20);
+    sg.addColorStop(0, 'rgba(249,115,22,0.5)');
+    sg.addColorStop(1, 'transparent');
+    ctx.beginPath(); ctx.arc(rx, ry, 20, 0, Math.PI*2);
+    ctx.fillStyle = sg; ctx.fill();
 
-        const { data, error } = await Promise.race([signupPromise, timeoutPromise]);
+    // Robot body (triangle pointing in direction of travel)
+    ctx.save();
+    ctx.translate(rx, ry);
+    ctx.rotate(ang - Math.PI/2); // adjust so triangle points up = forward
+    ctx.beginPath();
+    ctx.moveTo(0, -10);
+    ctx.lineTo(-7, 8);
+    ctx.lineTo(0, 4);
+    ctx.lineTo(7, 8);
+    ctx.closePath();
+    ctx.fillStyle = '#F97316';
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.5;
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
 
-        if (error) {
-          setAuthMsg(traduzirErroSupabase(error.message), 'err');
-          return;
-        }
+    // Position label
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = '9px JetBrains Mono,monospace';
+    ctx.fillText(`${Math.round(simPos.x)},${Math.round(simPos.y)}`, rx + 14, ry + 3);
+  }
+}
 
-        if (data?.session?.user) {
-          currentUser = data.session.user;
-          await loadProfileSafe();
-          enterApp();
-          return;
-        }
+// ─── INTERACTION ─────────────────────────────────────
+function getRealPt(e) {
+  const r = canvas.getBoundingClientRect();
+  const cx = e.clientX - r.left, cy = e.clientY - r.top;
+  let [rx, ry] = toReal(cx, cy);
+  const inside = rx >= 0 && rx <= FLL_W && ry >= 0 && ry <= FLL_H;
+  rx = Math.max(0, Math.min(FLL_W, rx));
+  ry = Math.max(0, Math.min(FLL_H, ry));
+  return { rx, ry, inside };
+}
 
-        setAuthMsg('✓ Conta criada. Se o login não entrar, confirme o email ou desative Confirm email no Supabase.', 'ok');
-      } catch (err) {
-        console.error('Erro no cadastro:', err);
-        setAuthMsg(err.message || 'Erro inesperado ao criar conta.', 'err');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Criar conta →';
-      }
+function updateHud(rx, ry, inside) {
+  document.getElementById('hud-coords').textContent = `x: ${rx}  y: ${ry} mm${inside ? '' : ' · fora'}`;
+}
+
+function onDown(e) {
+  const p = getRealPt(e);
+  updateHud(p.rx, p.ry, p.inside);
+  if (!p.inside) return;
+  e.preventDefault();
+  try { canvas.setPointerCapture(e.pointerId); } catch {}
+
+  if (!isProgrammer) return;
+
+  if (mode === 'zero') {
+    zeroX = p.rx; zeroY = p.ry;
+    toast(`📍 Ponto zero definido: (${zeroX}, ${zeroY})`);
+    setMode('click');
+    draw();
+    return;
+  }
+  if (mode === 'click') {
+    addPoint(p.rx, p.ry, 'IR_PARA');
+  } else if (mode === 'draw') {
+    isDrawing = true; lastDrawPt = [p.rx, p.ry];
+    addPoint(p.rx, p.ry, 'IR_PARA');
+  }
+}
+
+function onMove(e) {
+  const p = getRealPt(e);
+  updateHud(p.rx, p.ry, p.inside);
+  if (mode === 'draw' && isDrawing && lastDrawPt && p.inside && isProgrammer) {
+    e.preventDefault();
+    const dx = p.rx - lastDrawPt[0], dy = p.ry - lastDrawPt[1];
+    if (Math.sqrt(dx*dx + dy*dy) > 90) {
+      addPoint(p.rx, p.ry, 'IR_PARA');
+      lastDrawPt = [p.rx, p.ry];
     }
+  }
+}
 
-    function setAuthMsg(msg, type) {
-      document.getElementById('auth-err').textContent = type === 'err' ? msg : '';
-      document.getElementById('auth-ok').textContent = type === 'ok' ? msg : '';
+function onUp(e) {
+  isDrawing = false; lastDrawPt = null;
+  try { canvas.releasePointerCapture(e.pointerId); } catch {}
+}
+
+function addPoint(rx, ry, type) {
+  steps.push({ type: type || 'IR_PARA', x: rx, y: ry });
+  renderSteps(); draw();
+}
+
+function setMode(m) {
+  if (!isProgrammer && m !== 'zero') return;
+  mode = m;
+  document.getElementById('btn-mode-click').classList.toggle('active', m === 'click');
+  document.getElementById('btn-mode-draw').classList.toggle('active', m === 'draw');
+  document.getElementById('btn-zero').classList.toggle('zero-active', m === 'zero');
+  const modeText = { click: 'modo: clicar pontos', draw: 'modo: desenhar', zero: '📍 clique para definir zero' };
+  document.getElementById('hud-mode').textContent = modeText[m] || m;
+  canvas.style.cursor = m === 'zero' ? 'crosshair' : 'crosshair';
+}
+
+function undoLast() {
+  if (!isProgrammer || !steps.length) return;
+  steps.pop(); renderSteps(); draw();
+}
+
+function clearCanvas() {
+  if (!isProgrammer) return;
+  if (steps.length && !confirm('Limpar todos os pontos?')) return;
+  steps = []; renderSteps(); draw();
+}
+
+// ─── STEP RENDERING ──────────────────────────────────
+const STEP_TAG_CLASS = { IR_PARA:'ir', T:'trk', GMU:'gmu', GMD:'gmd', A:'avc', V:'trk', W:'ir' };
+const STEP_LABEL = { IR_PARA:'IR_PARA', T:'TRÁS', GMU:'GMU', GMD:'GMD', A:'AVANÇAR', V:'VIRAR', W:'WAIT' };
+
+function renderSteps() {
+  const list = document.getElementById('steps-list');
+  const empty = document.getElementById('steps-empty');
+  list.innerHTML = '';
+  empty.style.display = steps.length ? 'none' : '';
+  steps.forEach((s, i) => {
+    const d = document.createElement('div');
+    d.className = 'step-item';
+    const tag = s.type || 'IR_PARA';
+    const tagClass = STEP_TAG_CLASS[tag] || 'ir';
+    const label = STEP_LABEL[tag] || tag;
+    let desc = '';
+    if (tag === 'GMU' || tag === 'GMD') desc = `${s.graus}° @${s.vel}`;
+    else if (tag === 'T') desc = `-${s.dist}mm @${s.vel}`;
+    else if (tag === 'A') desc = `${s.dist}mm @${s.vel}`;
+    else if (tag === 'V') desc = `${s.graus}°`;
+    else if (tag === 'W') desc = `${s.ms}ms`;
+    else desc = `(${s.x}, ${s.y})`;
+    d.innerHTML = `<span class="step-n">${i+1}</span><span class="step-tag ${tagClass}">${label}</span><span class="step-desc">${desc}</span>${isProgrammer ? `<button class="step-del" onclick="deleteStep(${i});event.stopPropagation();">×</button>` : ''}`;
+    d.onclick = () => editStep(i);
+    list.appendChild(d);
+  });
+  list.scrollTop = list.scrollHeight;
+}
+
+
+function addActionStep(type) {
+  if (!isProgrammer) return;
+  const lastMove = [...steps].reverse().find(s => s.type === 'IR_PARA' || s.type === 'A');
+  const baseX = lastMove?.x ?? zeroX;
+  const baseY = lastMove?.y ?? zeroY;
+  if (type === 'T') {
+    const dist = parseInt(prompt('Distância para recuar em mm:', '200') || '0', 10);
+    const vel = parseInt(prompt('Velocidade em mm/s:', '700') || '700', 10);
+    if (dist > 0) steps.push({ type:'T', dist, vel, x:baseX, y:baseY });
+  } else if (type === 'A') {
+    const dist = parseInt(prompt('Distância para avançar em mm:', '200') || '0', 10);
+    const vel = parseInt(prompt('Velocidade em mm/s:', '700') || '700', 10);
+    if (dist > 0) steps.push({ type:'A', dist, vel, x:baseX, y:baseY });
+  } else if (type === 'GMU' || type === 'GMD') {
+    const graus = parseInt(prompt(`Graus do ${type}:`, '90') || '0', 10);
+    const vel = parseInt(prompt('Velocidade do motor:', '500') || '500', 10);
+    if (graus !== 0) steps.push({ type, graus, vel, x:baseX, y:baseY });
+  } else if (type === 'V') {
+    const graus = parseInt(prompt('Graus para virar:', '90') || '0', 10);
+    if (graus !== 0) steps.push({ type:'V', graus, x:baseX, y:baseY });
+  } else if (type === 'W') {
+    const ms = parseInt(prompt('Tempo de espera em milissegundos:', '500') || '0', 10);
+    if (ms > 0) steps.push({ type:'W', ms, x:baseX, y:baseY });
+  }
+  renderSteps(); draw();
+}
+
+function editStep(i) {
+  if (!isProgrammer) return;
+  const s = steps[i];
+  if (!s) return;
+  if (s.type === 'IR_PARA') {
+    const x = parseInt(prompt('X em mm:', s.x) || s.x, 10);
+    const y = parseInt(prompt('Y em mm:', s.y) || s.y, 10);
+    if (Number.isFinite(x) && Number.isFinite(y)) { s.x = Math.max(0, Math.min(FLL_W, x)); s.y = Math.max(0, Math.min(FLL_H, y)); }
+  } else if (s.type === 'T' || s.type === 'A') {
+    const dist = parseInt(prompt('Distância em mm:', s.dist || 200) || s.dist || 200, 10);
+    const vel = parseInt(prompt('Velocidade em mm/s:', s.vel || 700) || s.vel || 700, 10);
+    if (dist > 0) s.dist = dist;
+    if (vel > 0) s.vel = vel;
+  } else if (s.type === 'GMU' || s.type === 'GMD') {
+    const graus = parseInt(prompt('Graus:', s.graus || 90) || s.graus || 90, 10);
+    const vel = parseInt(prompt('Velocidade:', s.vel || 500) || s.vel || 500, 10);
+    if (Number.isFinite(graus)) s.graus = graus;
+    if (vel > 0) s.vel = vel;
+  } else if (s.type === 'V') {
+    const graus = parseInt(prompt('Graus para virar:', s.graus || 90) || s.graus || 90, 10);
+    if (Number.isFinite(graus)) s.graus = graus;
+  } else if (s.type === 'W') {
+    const ms = parseInt(prompt('Tempo em ms:', s.ms || 500) || s.ms || 500, 10);
+    if (ms > 0) s.ms = ms;
+  }
+  renderSteps(); draw();
+}
+
+function deleteStep(i) {
+  if (!isProgrammer) return;
+  steps.splice(i, 1); renderSteps(); draw();
+}
+
+// ─── SIMULATION ──────────────────────────────────────
+function getWaypoints() {
+  // Build list of positions: start from zero, go through IR_PARA and A/T steps
+  const pts = [{ x: zeroX, y: zeroY }];
+  steps.forEach(s => {
+    if (s.type === 'IR_PARA' || s.type === 'A') pts.push({ x: s.x, y: s.y });
+    else if (s.type === 'T') {
+      // trás = go back, for sim just stay near last
+      const last = pts[pts.length - 1];
+      pts.push({ x: last.x, y: last.y }); // simplified: no movement for T in sim
     }
+    // GMU, GMD: no positional change
+  });
+  return pts;
+}
 
-    async function doLogout() {
-      await sb.auth.signOut();
-      currentUser = currentProfile = null;
-      isProgrammer = isAdmin = false;
-      steps = []; missions = []; currentMissionId = null;
-      document.getElementById('app').classList.remove('show');
-      document.getElementById('landing').classList.remove('hide');
+function getSegmentTimes(waypoints) {
+  const times = [];
+  let total = 0;
+  for (let i = 1; i < waypoints.length; i++) {
+    const dx = waypoints[i].x - waypoints[i-1].x;
+    const dy = waypoints[i].y - waypoints[i-1].y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const t = Math.max(0.05, dist / ROBOT_SPEED_MM_S);
+    times.push(t); total += t;
+  }
+  return { times, total };
+}
+
+function toggleSim() {
+  if (!steps.length) { toast('Adicione pontos primeiro!', true); return; }
+  if (!simulating) {
+    startSim();
+  } else if (simPaused) {
+    resumeSim();
+  } else {
+    pauseSim();
+  }
+}
+
+function startSim() {
+  simulating = true; simPaused = false;
+  simElapsedAcc = 0;
+  simStartWall = performance.now();
+  document.getElementById('sim-hud').classList.add('show');
+  document.getElementById('btn-sim-play').textContent = '⏸ Pausar';
+  animSim();
+}
+
+function pauseSim() {
+  if (!simulating || simPaused) return;
+  simPaused = true;
+  simElapsedAcc += (performance.now() - simStartWall) / 1000;
+  cancelAnimationFrame(simAnimId);
+  document.getElementById('btn-sim-play').textContent = '▶ Retomar';
+}
+
+function resumeSim() {
+  if (!simulating || !simPaused) return;
+  simPaused = false;
+  simStartWall = performance.now();
+  document.getElementById('btn-sim-play').textContent = '⏸ Pausar';
+  animSim();
+}
+
+function stopSim() {
+  simulating = false; simPaused = false;
+  cancelAnimationFrame(simAnimId);
+  simElapsedAcc = 0;
+  document.getElementById('sim-hud').classList.remove('show');
+  document.getElementById('btn-sim-play').textContent = '▶ Simular';
+  draw(); // redraw without robot
+}
+
+function animSim() {
+  if (!simulating || simPaused) return;
+
+  const speedMult = parseFloat(document.getElementById('sim-speed-sel').value) || 2;
+  const wallNow = performance.now();
+  const simElapsed = simElapsedAcc + (wallNow - simStartWall) / 1000 * speedMult;
+
+  const waypoints = getWaypoints();
+  if (waypoints.length < 2) { stopSim(); return; }
+  const { times, total } = getSegmentTimes(waypoints);
+
+  if (simElapsed >= total) {
+    // Simulation complete
+    const lastWP = waypoints[waypoints.length - 1];
+    updateSimHUD(total, total, times.length, times.length);
+    draw({ x: lastWP.x, y: lastWP.y, angle: 0 });
+    simulating = false;
+    document.getElementById('btn-sim-play').textContent = '▶ Simular';
+    toast('✅ Simulação concluída! 🦈');
+    return;
+  }
+
+  // Find current segment
+  let elapsed = simElapsed;
+  let segIdx = 0, segProg = 0;
+  for (let i = 0; i < times.length; i++) {
+    if (elapsed <= times[i]) {
+      segProg = times[i] > 0 ? elapsed / times[i] : 1;
+      segIdx = i; break;
     }
+    elapsed -= times[i];
+  }
 
-    sb.auth.onAuthStateChange((event, session) => {
-      // Evita travamento dentro do callback do Supabase.
-      setTimeout(async () => {
-        if (session?.user && !document.getElementById('app').classList.contains('show')) {
-          try {
-            currentUser = session.user;
-            await loadProfileSafe();
-            enterApp();
-          } catch (err) {
-            console.error('Erro no onAuthStateChange:', err);
-            setAuthMsg(err.message || 'Erro ao carregar sessão.', 'err');
-          }
-        }
-      }, 0);
+  // Interpolate robot position
+  const from = waypoints[segIdx];
+  const to = waypoints[segIdx + 1];
+  const rx = from.x + (to.x - from.x) * segProg;
+  const ry = from.y + (to.y - from.y) * segProg;
+  const angle = Math.atan2(
+    (toCanvas(to.x, to.y)[0] - toCanvas(from.x, from.y)[0]),
+    (toCanvas(from.x, from.y)[1] - toCanvas(to.x, to.y)[1])
+  );
+
+  updateSimHUD(simElapsed, total, segIdx + 1, times.length);
+  draw({ x: rx, y: ry, angle });
+  simAnimId = requestAnimationFrame(animSim);
+}
+
+function fmtTime(s) {
+  const mins = Math.floor(s / 60);
+  const secs = (s % 60).toFixed(1);
+  return `${mins}:${secs.padStart(4,'0')}`;
+}
+
+function updateSimHUD(elapsed, total, seg, totalSeg) {
+  document.getElementById('sim-elapsed').textContent = fmtTime(elapsed);
+  const fllRemain = Math.max(0, FLL_MATCH_SEC - elapsed);
+  document.getElementById('sim-fll-remain').textContent = 'FLL: ' + fmtTime(fllRemain) + ' restante';
+  document.getElementById('sim-meta').textContent = `segmento ${seg} / ${totalSeg}  ·  total estimado: ${fmtTime(total)}`;
+  const pct = total > 0 ? Math.min(100, (elapsed / total) * 100) : 0;
+  document.getElementById('sim-bar-fill').style.width = pct + '%';
+}
+
+// ─── CODE GENERATION ─────────────────────────────────
+function generateCode() {
+  if (!steps.length) { toast('Adicione pontos no tapete primeiro', true); return; }
+  const missionName = document.getElementById('mission-title-input').value.trim() || 'Missão';
+  const L = [];
+  L.push('from pybricks.pupdevices import Motor');
+  L.push('from pybricks.parameters import Port, Direction');
+  L.push('from pybricks.robotics import DriveBase');
+  L.push('from pybricks.hubs import PrimeHub');
+  L.push('from pybricks.tools import wait');
+  L.push('from umath import sin, cos, atan2, sqrt, radians, degrees');
+  L.push('');
+  L.push('# ════════════════════════════════════════════════');
+  L.push(`# MISSÃO: ${missionName}`);
+  L.push('# GERADO PELO SHARKSPEAK v2 — Equipe Sharks FLL Taubaté');
+  L.push('# ════════════════════════════════════════════════');
+  L.push('');
+  L.push('VEL_VELOCIDADE  = 1000  # mm/s');
+  L.push('VEL_DESVIO      = 100   # mm/s');
+  L.push('VEL_ACELERACAO  = 700   # mm/s²');
+  L.push('DIST_MARGEM     = 140   # mm');
+  L.push('DIST_RECUO      = -5    # mm');
+  L.push('PID_GIRO = {"kp": 4.5, "ki": 0.08, "kd": 2.2, "limite_i": 5}');
+  L.push('OBSTACULOS = []');
+  L.push('');
+  L.push('hub        = PrimeHub()');
+  L.push('motor_esq  = Motor(Port.F, Direction.COUNTERCLOCKWISE)');
+  L.push('motor_dir  = Motor(Port.E)');
+  L.push('motor_peq1 = Motor(Port.B)');
+  L.push('motor_peq2 = Motor(Port.A)');
+  L.push('drive = DriveBase(motor_esq, motor_dir, wheel_diameter=60, axle_track=110)');
+  L.push('drive.settings(straight_speed=VEL_VELOCIDADE, straight_acceleration=VEL_ACELERACAO)');
+  L.push('');
+  L.push('x_atual, y_atual = 0.0, 0.0');
+  L.push('dist_anterior    = 0.0');
+  L.push('erro_anterior    = 0');
+  L.push('integral         = 0');
+  L.push('');
+  L.push('def atualizar_odometria():');
+  L.push('    global x_atual, y_atual, dist_anterior');
+  L.push('    dist_total  = drive.distance()');
+  L.push('    delta_dist  = dist_total - dist_anterior');
+  L.push('    theta       = radians(hub.imu.heading())');
+  L.push('    x_atual    += delta_dist * sin(theta)');
+  L.push('    y_atual    += delta_dist * cos(theta)');
+  L.push('    dist_anterior = dist_total');
+  L.push('');
+  L.push('def calcular_pid(erro):');
+  L.push('    global erro_anterior, integral');
+  L.push('    P = PID_GIRO["kp"] * erro');
+  L.push('    integral += erro');
+  L.push('    if abs(integral) > PID_GIRO["limite_i"]:');
+  L.push('        integral = (integral / abs(integral)) * PID_GIRO["limite_i"]');
+  L.push('    I = PID_GIRO["ki"] * integral');
+  L.push('    D = PID_GIRO["kd"] * (erro - erro_anterior)');
+  L.push('    erro_anterior = erro');
+  L.push('    return P + I + D');
+  L.push('');
+  L.push('def andar_ate(x_alvo, y_alvo, velocidade, detectar=True):');
+  L.push('    global x_atual, y_atual, integral, erro_anterior, dist_anterior');
+  L.push('    drive.reset(); dist_anterior = 0; integral = 0; erro_anterior = 0');
+  L.push('    while True:');
+  L.push('        atualizar_odometria()');
+  L.push('        dx, dy = x_alvo - x_atual, y_alvo - y_atual');
+  L.push('        distancia_restante = sqrt(dx**2 + dy**2)');
+  L.push('        if distancia_restante < 20:');
+  L.push('            drive.stop(); return "CHEGOU"');
+  L.push('        angulo_alvo  = degrees(atan2(dx, dy))');
+  L.push('        angulo_atual = hub.imu.heading()');
+  L.push('        erro_angulo  = (angulo_alvo - angulo_atual + 180) % 360 - 180');
+  L.push('        correcao     = calcular_pid(erro_angulo)');
+  L.push('        v_ajustada   = velocidade if abs(erro_angulo) < 30 else velocidade * 0.4');
+  L.push('        drive.drive(v_ajustada, correcao)');
+  L.push('        wait(10)');
+  L.push('        for obs in OBSTACULOS:');
+  L.push('            if (obs["x"][0]-10 <= x_atual <= obs["x"][1]+10 and');
+  L.push('                obs["y"][0]-10 <= y_atual <= obs["y"][1]+10):');
+  L.push('                drive.stop(); return obs');
+  L.push('');
+  L.push('def IR_PARA(x_final, y_final, angulo_final=None):');
+  L.push('    resultado = andar_ate(x_final, y_final, VEL_VELOCIDADE, detectar=True)');
+  L.push('    if resultado != "CHEGOU":');
+  L.push('        drive.straight(DIST_RECUO); atualizar_odometria()');
+  L.push('        ponto_desvio_x = resultado["x"][1] + DIST_MARGEM');
+  L.push('        ponto_desvio_y = y_atual');
+  L.push('        andar_ate(ponto_desvio_x, ponto_desvio_y, VEL_DESVIO, detectar=False)');
+  L.push('        andar_ate(ponto_desvio_x, resultado["y"][1] + DIST_MARGEM, VEL_DESVIO, detectar=False)');
+  L.push('        return IR_PARA(x_final, y_final, angulo_final)');
+  L.push('    if angulo_final is not None:');
+  L.push('        erro_final = (angulo_final - hub.imu.heading() + 180) % 360 - 180');
+  L.push('        drive.turn(erro_final)');
+  L.push('');
+  L.push('def PA(x_novo, y_novo):');
+  L.push('    global x_atual, y_atual, dist_anterior');
+  L.push('    x_atual = x_novo; y_atual = y_novo');
+  L.push('    drive.reset(); dist_anterior = 0');
+  L.push('');
+  L.push('def T(distancia_mm, velocidade=700):');
+  L.push('    config = drive.settings()');
+  L.push('    drive.settings(straight_speed=velocidade)');
+  L.push('    drive.straight(-distancia_mm)');
+  L.push('    drive.settings(straight_speed=config[0])');
+  L.push('    atualizar_odometria()');
+  L.push('');
+  L.push('def GMU(graus, velocidade):');
+  L.push('    motor_peq1.run_angle(velocidade, graus)');
+  L.push('');
+  L.push('def GMD(graus, velocidade):');
+  L.push('    motor_peq2.run_angle(velocidade, graus)');
+  L.push('');
+  L.push('def A(distancia_mm, velocidade):');
+  L.push('    config = drive.settings()');
+  L.push('    drive.settings(straight_speed=velocidade)');
+  L.push('    drive.straight(distancia_mm)');
+  L.push('    drive.settings(straight_speed=config[0])');
+  L.push('    atualizar_odometria()');
+  L.push('');
+  L.push('def V(graus):');
+  L.push('    drive.turn(graus)');
+  L.push('');
+  L.push('def W(ms):');
+  L.push('    wait(ms)');
+  L.push('');
+  L.push('# ════════════════════════════════════════════════');
+  L.push('# EXECUÇÃO — trajetória gerada pelo SharksPeak');
+  L.push('# ════════════════════════════════════════════════');
+  L.push('hub.imu.reset_heading(0)');
+  L.push('drive.reset()');
+  L.push('');
+
+  // Set zero point
+  if (zeroX !== 0 || zeroY !== 0) {
+    L.push(`PA(${zeroX}, ${zeroY})  # ponto zero definido no SharksPeak`);
+    L.push('');
+  }
+
+  // Generate each step
+  steps.forEach((s, i) => {
+    const comment = `  # passo ${i+1}`;
+    if (s.type === 'IR_PARA') {
+      L.push(`IR_PARA(${s.x}, ${s.y})${comment}`);
+    } else if (s.type === 'T') {
+      L.push(`T(${s.dist || 200}, ${s.vel || 700})${comment}`);
+    } else if (s.type === 'GMU') {
+      L.push(`GMU(${s.graus || 90}, ${s.vel || 500})${comment}`);
+    } else if (s.type === 'GMD') {
+      L.push(`GMD(${s.graus || 90}, ${s.vel || 500})${comment}`);
+    } else if (s.type === 'A') {
+      L.push(`A(${s.dist || 200}, ${s.vel || 700})${comment}`);
+    } else if (s.type === 'V') {
+      L.push(`V(${s.graus || 90})${comment}`);
+    } else if (s.type === 'W') {
+      L.push(`W(${s.ms || 500})${comment}`);
+    } else {
+      L.push(`IR_PARA(${s.x}, ${s.y})${comment}`);
+    }
+  });
+
+  L.push('');
+  L.push(`print("SharksPeak — missão '${missionName}' concluída! 🦈")`);
+
+  document.getElementById('code-out').textContent = L.join('\n');
+  document.getElementById('code-modal').classList.add('show');
+  logActivity('generate_code', currentMissionId, 'mission', { steps: steps.length });
+}
+
+function closeCode() { document.getElementById('code-modal').classList.remove('show'); }
+
+function copyCode() {
+  const text = document.getElementById('code-out').textContent;
+  const done = () => {
+    const b = document.querySelector('.copy-btn');
+    b.textContent = '✓ Copiado!';
+    setTimeout(() => b.textContent = 'Copiar código', 1800);
+  };
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(() => {
+      fallbackCopy(text); done();
     });
-
-    async function loadProfileSafe() {
-      if (!currentUser?.id) throw new Error('Usuário não encontrado na sessão.');
-
-      const meta = currentUser.user_metadata || {};
-      const fallbackProfile = {
-        id: currentUser.id,
-        email: currentUser.email,
-        name: meta.name || currentUser.email.split('@')[0],
-        role: meta.role || 'assembler'
-      };
-
-      try {
-        const profilePromise = sb
-          .from('profiles')
-          .select('*')
-          .eq('id', currentUser.id)
-          .maybeSingle();
-
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Login feito, mas o perfil demorou demais para carregar. Verifique tabela profiles/RLS.')), 10000);
-        });
-
-        const { data, error } = await Promise.race([profilePromise, timeoutPromise]);
-
-        if (error) {
-          console.warn('Erro ao buscar profile. Usando fallback local:', error);
-          currentProfile = fallbackProfile;
-        } else if (data) {
-          currentProfile = data;
-        } else {
-          // Tenta criar perfil caso o trigger não tenha criado.
-          const { data: created, error: createError } = await sb
-            .from('profiles')
-            .insert(fallbackProfile)
-            .select('*')
-            .single();
-
-          if (createError) {
-            console.warn('Não foi possível criar profile via front. Usando fallback local:', createError);
-            currentProfile = fallbackProfile;
-          } else {
-            currentProfile = created;
-          }
-        }
-      } catch (err) {
-        console.warn('Falha ao carregar profile. Usando fallback local:', err);
-        currentProfile = fallbackProfile;
-      }
-
-      isProgrammer = currentProfile?.role === 'programmer' || currentProfile?.role === 'admin';
-      isAdmin = currentProfile?.role === 'admin';
-    }
-
-    // Compatibilidade com chamadas antigas.
-    async function loadProfile() {
-      return loadProfileSafe();
-    }
-
-    function enterApp() {
-      closeAuth();
-
-      const landing = document.getElementById('landing');
-      const app = document.getElementById('app');
-
-      // CRÍTICO: o app precisa estar visível ANTES de medir o canvas.
-      // Se initCanvas() roda com #app display:none, getBoundingClientRect() retorna 0x0
-      // e o tapete nunca aparece até um resize manual do navegador.
-      landing.classList.add('hide');
-      app.classList.add('show');
-
-      // topbar user info
-      const name = currentProfile?.name || currentUser.email.split('@')[0];
-
-      const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-      document.getElementById('user-avatar-initials').textContent = initials;
-      document.getElementById('user-name-top').textContent = name;
-      document.getElementById('user-role-top').textContent = currentProfile?.role || 'assembler';
-
-      const pill = document.getElementById('role-pill');
-      pill.textContent = { admin: '👑 Admin', programmer: '💻 Programador', assembler: '🔧 Montador' }[currentProfile?.role] || 'montador';
-      pill.className = 'role-pill ' + (currentProfile?.role || 'assembler');
-
-      // admin button
-      document.getElementById('admin-btn').style.display = isAdmin ? '' : 'none';
-
-      // disable edit controls for read-only users
-      const editEls = ['btn-mode-click', 'btn-mode-draw', 'btn-undo', 'btn-clear', 'btn-save-mission', 'btn-new-mission'];
-      editEls.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = !isProgrammer; });
-      document.getElementById('hud-readonly').classList.toggle('show', !isProgrammer);
-
-      initCanvas();
-
-      // Força redesenho em múltiplos momentos para cobrir transição CSS, Vercel e mobile.
-      requestAnimationFrame(() => { resize(); draw(); });
-      setTimeout(() => { resize(); draw(); }, 80);
-      setTimeout(() => { resize(); draw(); }, 350);
-
-      // welcome display
-      setTimeout(() => showWelcome(name), 220);
-      setTimeout(() => toast(`🦈 Seja bem-vindo, ${name}!`), 550);
-
-      loadMissions();
-      logActivity('login', null, null, {});
-    }
-
-    // ─── ACTIVITY LOG ─────────────────────────────────────
-    async function logActivity(action, targetId, targetType, metadata) {
-      try {
-        await sb.from('activity_logs').insert({
-          user_id: currentUser.id, action, target_id: targetId,
-          target_type: targetType, metadata
-        });
-      } catch (e) { }
-    }
-
-    // ─── MISSIONS ─────────────────────────────────────────
-    async function loadMissions() {
-      const { data } = await sb.from('missions').select('*').order('updated_at', { ascending: false });
-      missions = data || [];
-      renderMissions();
-    }
-
-    function renderMissions() {
-      const el = document.getElementById('missions-list');
-      if (!missions.length) { el.innerHTML = '<div style="font-size:11px;color:var(--text3);font-family:var(--mono);padding:8px 0;">nenhuma missão ainda</div>'; return; }
-      el.innerHTML = '';
-      missions.forEach(m => {
-        const d = document.createElement('div');
-        d.className = 'mission-item' + (m.id === currentMissionId ? ' active' : '');
-        d.innerHTML = `<span class="mi-dot"></span><span class="mi-name">${m.title}</span>${isProgrammer ? `<button class="mi-del" onclick="deleteMission('${m.id}',event)">×</button>` : ''}`;
-        d.onclick = (e) => { if (e.target.classList.contains('mi-del')) return; loadMission(m); };
-        el.appendChild(d);
-      });
-    }
-
-    function loadMission(m) {
-      currentMissionId = m.id;
-      steps = m.steps || [];
-      document.getElementById('mission-title-input').value = m.title;
-      renderSteps(); draw(); renderMissions();
-      toast('Missão carregada: ' + m.title);
-    }
-
-    async function saveMission() {
-      if (!isProgrammer) return;
-      const title = document.getElementById('mission-title-input').value.trim() || 'Nova Missão';
-      const payload = { title, steps, updated_by: currentUser.id };
-      let error;
-      if (currentMissionId) {
-        ({ error } = await sb.from('missions').update(payload).eq('id', currentMissionId));
-      } else {
-        const { data, error: e } = await sb.from('missions').insert({ ...payload, created_by: currentUser.id }).select().single();
-        error = e;
-        if (data) currentMissionId = data.id;
-      }
-      if (error) toast('Erro: ' + error.message, true);
-      else { toast('Missão salva!'); logActivity('save_mission', currentMissionId, 'mission', { title }); await loadMissions(); }
-    }
-
-    async function deleteMission(id, e) {
-      e.stopPropagation();
-      if (!isProgrammer) return;
-      if (!confirm('Deletar esta missão?')) return;
-      await sb.from('missions').delete().eq('id', id);
-      logActivity('delete_mission', id, 'mission', {});
-      if (currentMissionId === id) newMission();
-      await loadMissions(); toast('Missão deletada');
-    }
-
-    function newMission() {
-      currentMissionId = null;
-      steps = [];
-      document.getElementById('mission-title-input').value = '';
-      renderSteps(); draw(); renderMissions();
-    }
-
-    // ─── CANVAS ───────────────────────────────────────────
-    function initCanvas() {
-      canvas = document.getElementById('mat-canvas');
-      wrap = document.getElementById('canvas-wrap');
-      ctx = canvas.getContext('2d');
-
-      // Carrega o tapete real salvo na raiz do projeto.
-      matImg = new Image();
-      matImg.onload = () => {
-        console.log('✅ tapete.png carregado:', matImg.naturalWidth, matImg.naturalHeight);
-        resize();
-        draw();
-      };
-      matImg.onerror = () => {
-        console.error('❌ tapete.png não encontrado. Ele precisa estar na mesma pasta do index.html.');
-        matImg = null;
-        toast('Erro: tapete.png não encontrado na raiz do projeto', true);
-        resize();
-        draw();
-      };
-      matImg.src = './tapete.png';
-
-      resize();
-      window.removeEventListener('resize', resize);
-      window.addEventListener('resize', resize);
-
-      // Pointer Events funcionam com mouse, touch e caneta. Evita duplicar listeners ao relogar.
-      if (!canvas.dataset.bound) {
-        canvas.addEventListener('pointerdown', onDown);
-        canvas.addEventListener('pointermove', onMove);
-        canvas.addEventListener('pointerup', onUp);
-        canvas.addEventListener('pointercancel', onUp);
-        canvas.addEventListener('pointerleave', onUp);
-        canvas.dataset.bound = 'true';
-      }
-    }
-
-    function resize() {
-      if (!canvas || !wrap) return;
-      const r = wrap.getBoundingClientRect();
-
-      // Se o app ainda estiver invisível/transicionando, o canvas mede 0x0.
-      // Reagenda o cálculo para evitar tela preta sem tapete.
-      if (r.width < 20 || r.height < 20) {
-        console.warn('Canvas ainda sem tamanho. Tentando redimensionar novamente...', r.width, r.height);
-        setTimeout(resize, 80);
-        return;
-      }
-
-      canvas.width = Math.floor(r.width);
-      canvas.height = Math.floor(r.height);
-
-      scale = Math.min(canvas.width / FLL_W, canvas.height / FLL_H) * 0.92;
-      offX = (canvas.width - FLL_W * scale) / 2;
-      offY = (canvas.height - FLL_H * scale) / 2;
-
-      draw();
-    }
-
-    function toCanvas(rx, ry) { return [offX + rx * scale, offY + (FLL_H - ry) * scale]; }
-    function toReal(cx, cy) { return [Math.round((cx - offX) / scale), Math.round(FLL_H - (cy - offY) / scale)]; }
-
-    function draw() {
-      if (!canvas || !ctx) return;
-      const W = FLL_W * scale, H = FLL_H * scale;
-      if (!Number.isFinite(W) || !Number.isFinite(H) || W <= 0 || H <= 0) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // background
-      ctx.fillStyle = '#08040f';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.save(); ctx.translate(offX, offY);
-
-      // tapete image or fallback
-      if (matImg && matImg.complete && matImg.naturalWidth > 0) {
-        ctx.globalAlpha = 1;
-        ctx.drawImage(matImg, 0, 0, W, H);
-        ctx.globalAlpha = 1;
-      } else {
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, W, H);
-
-        ctx.fillStyle = '#111827';
-        ctx.font = '18px JetBrains Mono, monospace';
-        ctx.fillText('tapete.png não encontrado ou ainda carregando', 28, 42);
-        ctx.font = '13px JetBrains Mono, monospace';
-        ctx.fillText('Coloque tapete.png na mesma pasta do index.html e faça commit/deploy.', 28, 68);
-      }
-
-      // leve overlay para manter pontos/grade visíveis sem esconder o tapete
-      ctx.fillStyle = 'rgba(255,255,255,0.00)';
-      ctx.fillRect(0, 0, W, H);
-
-      // grid lines
-      ctx.strokeStyle = 'rgba(124,58,237,0.12)'; ctx.lineWidth = 0.5;
-      for (let x = 0; x <= FLL_W; x += 100) { const cx = x * scale; ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, H); ctx.stroke(); }
-      for (let y = 0; y <= FLL_H; y += 100) { const cy = y * scale; ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.stroke(); }
-
-      // grid labels
-      ctx.fillStyle = 'rgba(90,78,122,0.7)';
-      ctx.font = `${Math.max(7, scale * 12)}px JetBrains Mono, monospace`;
-      for (let x = 0; x <= FLL_W; x += 200) ctx.fillText(x, x * scale + 3, H - 3);
-      for (let y = 200; y <= FLL_H; y += 200) ctx.fillText(y, 3, (FLL_H - y) * scale - 3);
-
-      // border
-      const grad = ctx.createLinearGradient(0, 0, W, H);
-      grad.addColorStop(0, 'rgba(124,58,237,0.8)');
-      grad.addColorStop(1, 'rgba(249,115,22,0.8)');
-      ctx.strokeStyle = grad; ctx.lineWidth = 1.5;
-      ctx.strokeRect(0, 0, W, H);
-
-      ctx.restore();
-
-      // origin marker
-      const [ox, oy] = toCanvas(0, 0);
-      ctx.beginPath(); ctx.arc(ox, oy, 6, 0, Math.PI * 2);
-      const og = ctx.createRadialGradient(ox, oy, 0, ox, oy, 6);
-      og.addColorStop(0, '#F97316'); og.addColorStop(1, 'rgba(249,115,22,0)');
-      ctx.fillStyle = og; ctx.fill();
-      ctx.beginPath(); ctx.arc(ox, oy, 3, 0, Math.PI * 2);
-      ctx.fillStyle = '#F97316'; ctx.fill();
-      ctx.fillStyle = 'rgba(249,115,22,0.7)';
-      ctx.font = '9px JetBrains Mono,monospace';
-      ctx.fillText('origem', ox + 8, oy + 4);
-
-      // path
-      const pts = steps;
-      if (!pts.length) return;
-
-      ctx.save();
-      let prev = [ox, oy];
-      pts.forEach((s, i) => {
-        const [cx, cy] = toCanvas(s.x, s.y);
-        // line
-        const lg = ctx.createLinearGradient(prev[0], prev[1], cx, cy);
-        lg.addColorStop(0, 'rgba(124,58,237,0.7)');
-        lg.addColorStop(1, 'rgba(249,115,22,0.7)');
-        ctx.beginPath(); ctx.moveTo(prev[0], prev[1]); ctx.lineTo(cx, cy);
-        ctx.strokeStyle = lg; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.stroke();
-        ctx.setLineDash([]);
-
-        // glow dot
-        const isLast = i === pts.length - 1;
-        const rg = ctx.createRadialGradient(cx, cy, 0, cx, cy, isLast ? 10 : 7);
-        rg.addColorStop(0, isLast ? 'rgba(249,115,22,0.4)' : 'rgba(124,58,237,0.3)');
-        rg.addColorStop(1, 'transparent');
-        ctx.beginPath(); ctx.arc(cx, cy, isLast ? 10 : 7, 0, Math.PI * 2);
-        ctx.fillStyle = rg; ctx.fill();
-
-        // dot
-        ctx.beginPath(); ctx.arc(cx, cy, isLast ? 5 : 4, 0, Math.PI * 2);
-        ctx.fillStyle = isLast ? '#F97316' : '#9B5CF6'; ctx.fill();
-        ctx.strokeStyle = isLast ? 'rgba(249,115,22,0.5)' : 'rgba(155,92,246,0.4)';
-        ctx.lineWidth = 1; ctx.stroke();
-
-        // number
-        ctx.fillStyle = 'rgba(255,255,255,0.85)';
-        ctx.font = `bold ${Math.max(9, scale * 13)}px JetBrains Mono,monospace`;
-        ctx.fillText(i + 1, cx + 7, cy - 5);
-
-        prev = [cx, cy];
-      });
-      ctx.restore();
-    }
-
-    function getRealPointFromEvent(e) {
-      const r = canvas.getBoundingClientRect();
-      const cx = e.clientX - r.left;
-      const cy = e.clientY - r.top;
-      let [rx, ry] = toReal(cx, cy);
-      const inside = rx >= 0 && rx <= FLL_W && ry >= 0 && ry <= FLL_H;
-      rx = Math.max(0, Math.min(FLL_W, rx));
-      ry = Math.max(0, Math.min(FLL_H, ry));
-      return { rx, ry, inside };
-    }
-
-    function updateHud(rx, ry, inside = true) {
-      const suffix = inside ? '' : ' · fora do tapete';
-      document.getElementById('hud-coords').textContent = `x: ${rx}  y: ${ry} mm${suffix}`;
-    }
-
-    function onDown(e) {
-      const p = getRealPointFromEvent(e);
-      updateHud(p.rx, p.ry, p.inside);
-      if (!isProgrammer || !p.inside) return;
-
-      e.preventDefault();
-      try { canvas.setPointerCapture(e.pointerId); } catch (_) { }
-
-      if (mode === 'click') {
-        addPoint(p.rx, p.ry);
-      } else {
-        isDrawing = true;
-        lastDrawPt = [p.rx, p.ry];
-        addPoint(p.rx, p.ry);
-      }
-    }
-
-    function onMove(e) {
-      const p = getRealPointFromEvent(e);
-      updateHud(p.rx, p.ry, p.inside);
-      if (!isProgrammer) return;
-
-      if (mode === 'draw' && isDrawing && lastDrawPt && p.inside) {
-        e.preventDefault();
-        const dx = p.rx - lastDrawPt[0], dy = p.ry - lastDrawPt[1];
-        if (Math.sqrt(dx * dx + dy * dy) > 85) {
-          addPoint(p.rx, p.ry);
-          lastDrawPt = [p.rx, p.ry];
-        }
-      }
-    }
-
-    function onMoveReadonly(e) {
-      const p = getRealPointFromEvent(e);
-      updateHud(p.rx, p.ry, p.inside);
-    }
-
-    function onUp(e) {
-      isDrawing = false;
-      lastDrawPt = null;
-      try { canvas.releasePointerCapture(e.pointerId); } catch (_) { }
-    }
-
-    function addPoint(rx, ry) {
-      steps.push({ type: 'IR_PARA', x: rx, y: ry });
-      renderSteps(); draw();
-    }
-
-    function setMode(m) {
-      if (!isProgrammer) return;
-      mode = m;
-      document.getElementById('btn-mode-click').classList.toggle('active', m === 'click');
-      document.getElementById('btn-mode-draw').classList.toggle('active', m === 'draw');
-      document.getElementById('hud-mode').textContent = m === 'click' ? 'modo: clicar pontos' : 'modo: desenhar';
-    }
-
-    function undoLast() { if (!isProgrammer) return; steps.pop(); renderSteps(); draw(); }
-    function clearCanvas() {
-      if (!isProgrammer) return;
-      steps = [];
-      renderSteps(); draw();
-    }
-
-    function renderSteps() {
-      const list = document.getElementById('steps-list');
-      const empty = document.getElementById('steps-empty');
-      list.innerHTML = '';
-      empty.style.display = steps.length ? 'none' : '';
-      steps.forEach((s, i) => {
-        const d = document.createElement('div');
-        d.className = 'step-item';
-        d.innerHTML = `<span class="step-n">${i + 1}</span><span class="step-tag">IR_PARA</span><span class="step-desc">(${s.x}, ${s.y})</span>${isProgrammer ? `<button class="step-del" onclick="deleteStep(${i})">×</button>` : ''}`;
-        list.appendChild(d);
-      });
-      list.scrollTop = list.scrollHeight;
-    }
-
-    function deleteStep(i) { if (!isProgrammer) return; steps.splice(i, 1); renderSteps(); draw(); }
-
-    // ─── CODE GEN ─────────────────────────────────────────
-    function generateCode() {
-      if (!steps.length) { toast('Adicione pontos no tapete primeiro', true); return; }
-      const L = [];
-      L.push('from pybricks.pupdevices import Motor');
-      L.push('from pybricks.parameters import Port, Direction');
-      L.push('from pybricks.robotics import DriveBase');
-      L.push('from pybricks.hubs import PrimeHub');
-      L.push('from pybricks.tools import wait');
-      L.push('from umath import sin, cos, atan2, sqrt, radians, degrees');
-      L.push('');
-      L.push('# ═══════════════════════════════════════════════');
-      L.push('# GERADO PELO SHARKSPEAK — Equipe Sharks FLL');
-      L.push('# ═══════════════════════════════════════════════');
-      L.push('');
-      L.push('VEL_VELOCIDADE  = 1000');
-      L.push('VEL_DESVIO      = 100');
-      L.push('VEL_ACELERACAO  = 700');
-      L.push('DIST_MARGEM     = 140');
-      L.push('DIST_RECUO      = -5');
-      L.push('PID_GIRO = {"kp": 4.5, "ki": 0.08, "kd": 2.2, "limite_i": 5}');
-      L.push('OBSTACULOS = []');
-      L.push('');
-      L.push('hub        = PrimeHub()');
-      L.push('motor_esq  = Motor(Port.F, Direction.COUNTERCLOCKWISE)');
-      L.push('motor_dir  = Motor(Port.E)');
-      L.push('motor_peq1 = Motor(Port.B)');
-      L.push('motor_peq2 = Motor(Port.A)');
-      L.push('drive = DriveBase(motor_esq, motor_dir, wheel_diameter=60, axle_track=110)');
-      L.push('drive.settings(straight_speed=VEL_VELOCIDADE, straight_acceleration=VEL_ACELERACAO)');
-      L.push('');
-      L.push('x_atual, y_atual = 0.0, 0.0');
-      L.push('dist_anterior    = 0.0');
-      L.push('erro_anterior    = 0');
-      L.push('integral         = 0');
-      L.push('');
-      L.push('def atualizar_odometria():');
-      L.push('    global x_atual, y_atual, dist_anterior');
-      L.push('    dist_total  = drive.distance()');
-      L.push('    delta_dist  = dist_total - dist_anterior');
-      L.push('    theta       = radians(hub.imu.heading())');
-      L.push('    x_atual    += delta_dist * sin(theta)');
-      L.push('    y_atual    += delta_dist * cos(theta)');
-      L.push('    dist_anterior = dist_total');
-      L.push('');
-      L.push('def calcular_pid(erro):');
-      L.push('    global erro_anterior, integral');
-      L.push('    P = PID_GIRO["kp"] * erro');
-      L.push('    integral += erro');
-      L.push('    if abs(integral) > PID_GIRO["limite_i"]:');
-      L.push('        integral = (integral / abs(integral)) * PID_GIRO["limite_i"]');
-      L.push('    I = PID_GIRO["ki"] * integral');
-      L.push('    D = PID_GIRO["kd"] * (erro - erro_anterior)');
-      L.push('    erro_anterior = erro');
-      L.push('    return P + I + D');
-      L.push('');
-      L.push('def andar_ate(x_alvo, y_alvo, velocidade, detectar=True):');
-      L.push('    global x_atual, y_atual, integral, erro_anterior, dist_anterior');
-      L.push('    drive.reset(); dist_anterior = 0; integral = 0; erro_anterior = 0');
-      L.push('    while True:');
-      L.push('        atualizar_odometria()');
-      L.push('        dx, dy = x_alvo - x_atual, y_alvo - y_atual');
-      L.push('        distancia_restante = sqrt(dx**2 + dy**2)');
-      L.push('        if distancia_restante < 20:');
-      L.push('            drive.stop(); return "CHEGOU"');
-      L.push('        angulo_alvo  = degrees(atan2(dx, dy))');
-      L.push('        angulo_atual = hub.imu.heading()');
-      L.push('        erro_angulo  = (angulo_alvo - angulo_atual + 180) % 360 - 180');
-      L.push('        correcao     = calcular_pid(erro_angulo)');
-      L.push('        v_ajustada   = velocidade if abs(erro_angulo) < 30 else velocidade * 0.4');
-      L.push('        drive.drive(v_ajustada, correcao)');
-      L.push('        wait(10)');
-      L.push('        for obs in OBSTACULOS:');
-      L.push('            if (obs["x"][0]-10 <= x_atual <= obs["x"][1]+10 and');
-      L.push('                obs["y"][0]-10 <= y_atual <= obs["y"][1]+10):');
-      L.push('                drive.stop(); return obs');
-      L.push('');
-      L.push('def IR_PARA(x_final, y_final, angulo_final=None):');
-      L.push('    resultado = andar_ate(x_final, y_final, VEL_VELOCIDADE, detectar=True)');
-      L.push('    if resultado != "CHEGOU":');
-      L.push('        drive.straight(DIST_RECUO); atualizar_odometria()');
-      L.push('        ponto_desvio_x = resultado["x"][1] + DIST_MARGEM');
-      L.push('        ponto_desvio_y = y_atual');
-      L.push('        andar_ate(ponto_desvio_x, ponto_desvio_y, VEL_DESVIO, detectar=False)');
-      L.push('        andar_ate(ponto_desvio_x, resultado["y"][1] + DIST_MARGEM, VEL_DESVIO, detectar=False)');
-      L.push('        return IR_PARA(x_final, y_final, angulo_final)');
-      L.push('    if angulo_final is not None:');
-      L.push('        erro_final = (angulo_final - hub.imu.heading() + 180) % 360 - 180');
-      L.push('        drive.turn(erro_final)');
-      L.push('');
-      L.push('def PA(x_novo, y_novo):');
-      L.push('    global x_atual, y_atual, dist_anterior');
-      L.push('    x_atual = x_novo; y_atual = y_novo');
-      L.push('    drive.reset(); dist_anterior = 0');
-      L.push('');
-      L.push('def T(distancia_mm, velocidade=700):');
-      L.push('    config = drive.settings()');
-      L.push('    drive.settings(straight_speed=velocidade)');
-      L.push('    drive.straight(-distancia_mm)');
-      L.push('    drive.settings(straight_speed=config[0])');
-      L.push('    atualizar_odometria()');
-      L.push('');
-      L.push('def GMU(graus, velocidade):');
-      L.push('    motor_peq1.run_angle(velocidade, graus)');
-      L.push('');
-      L.push('def GMD(graus, velocidade):');
-      L.push('    motor_peq2.run_angle(velocidade, graus)');
-      L.push('');
-      L.push('def A(distancia_mm, velocidade):');
-      L.push('    config = drive.settings()');
-      L.push('    drive.settings(straight_speed=velocidade)');
-      L.push('    drive.straight(distancia_mm)');
-      L.push('    drive.settings(straight_speed=config[0])');
-      L.push('    atualizar_odometria()');
-      L.push('');
-      L.push('# ═══════════════════════════════════════════════');
-      L.push('# EXECUÇÃO — trajetória gerada pelo SharksPeak');
-      L.push('# ═══════════════════════════════════════════════');
-      L.push('hub.imu.reset_heading(0)');
-      L.push('drive.reset()');
-      L.push('');
-      steps.forEach(s => L.push(`IR_PARA(${s.x}, ${s.y})`));
-      L.push('');
-      L.push('print("SharksPeak — missão concluída! 🦈")');
-
-      document.getElementById('code-out').textContent = L.join('\n');
-      document.getElementById('code-modal').classList.add('show');
-      logActivity('generate_code', currentMissionId, 'mission', { steps: steps.length });
-    }
-
-    function closeCode() { document.getElementById('code-modal').classList.remove('show'); }
-    function copyCode() {
-      const text = document.getElementById('code-out').textContent;
-      const done = () => {
-        const b = document.querySelector('.copy-btn');
-        b.textContent = 'Copiado!'; setTimeout(() => b.textContent = 'Copiar código', 1600);
-      };
-      if (navigator.clipboard?.writeText) {
-        navigator.clipboard.writeText(text).then(done).catch(() => toast('Não foi possível copiar automaticamente', true));
-      } else {
-        const ta = document.createElement('textarea');
-        ta.value = text; document.body.appendChild(ta); ta.select();
-        document.execCommand('copy'); ta.remove(); done();
-      }
-    }
-
-    // ─── ADMIN ────────────────────────────────────────────
-    async function openAdmin() {
-      document.getElementById('admin-modal').classList.add('show');
-      await Promise.all([loadAdminUsers(), loadAdminLogs(), loadAdminStats()]);
-    }
-    function closeAdmin() { document.getElementById('admin-modal').classList.remove('show'); }
-
-    async function loadAdminStats() {
-      const [{ count: uc }, { count: mc }, { count: lc }] = await Promise.all([
-        sb.from('profiles').select('*', { count: 'exact', head: true }),
-        sb.from('missions').select('*', { count: 'exact', head: true }),
-        sb.from('activity_logs').select('*', { count: 'exact', head: true }),
-      ]);
-      document.getElementById('stat-users').textContent = uc ?? '–';
-      document.getElementById('stat-missions').textContent = mc ?? '–';
-      document.getElementById('stat-logs').textContent = lc ?? '–';
-    }
-
-    async function loadAdminUsers() {
-      const { data } = await sb.from('profiles').select('*').order('created_at', { ascending: false });
-      const tbody = document.getElementById('admin-users-body');
-      tbody.innerHTML = '';
-      (data || []).forEach(u => {
-        const tr = document.createElement('tr');
-        const date = new Date(u.created_at).toLocaleDateString('pt-BR');
-        tr.innerHTML = `
-      <td>${u.name || '—'}</td>
-      <td style="color:var(--text3)">${u.email}</td>
-      <td>
-        <select class="role-select" id="role-sel-${u.id}">
-          <option value="assembler" ${u.role === 'assembler' ? 'selected' : ''}>Montador</option>
-          <option value="programmer" ${u.role === 'programmer' ? 'selected' : ''}>Programador</option>
-          <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
-        </select>
-      </td>
-      <td style="color:var(--text3)">${date}</td>
-      <td><button class="save-role-btn" onclick="saveUserRole('${u.id}','${u.email}')">Salvar</button></td>
-    `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    async function saveUserRole(userId, email) {
-      const role = document.getElementById('role-sel-' + userId).value;
-      const { error } = await sb.from('profiles').update({ role }).eq('id', userId);
-      if (error) toast('Erro: ' + error.message, true);
-      else { toast('Função de ' + email + ' atualizada → ' + role); logActivity('change_role', userId, 'profile', { role }); }
-    }
-
-    async function loadAdminLogs() {
-      const { data } = await sb.from('activity_logs')
-        .select('*, profiles(name)')
-        .order('created_at', { ascending: false })
-        .limit(20);
-      const el = document.getElementById('admin-logs');
-      el.innerHTML = '';
-      (data || []).forEach(l => {
-        const d = document.createElement('div');
-        d.className = 'log-item';
-        const time = new Date(l.created_at).toLocaleString('pt-BR');
-        d.innerHTML = `<span class="log-user">${l.profiles?.name || '?'}</span><span class="log-action">${l.action}${l.target_type ? ' → ' + l.target_type : ''}</span><span class="log-time">${time}</span>`;
-        el.appendChild(d);
-      });
-    }
-
-    // ─── WELCOME + TOAST ───────────────────────────────────
-
-    function showWelcome(name) {
-      const banner = document.getElementById('welcome-banner');
-      const nameEl = document.getElementById('welcome-name');
-      if (!banner || !nameEl) return;
-      nameEl.textContent = name || 'Sharks';
-      banner.classList.add('show');
-      clearTimeout(showWelcome._timer);
-      showWelcome._timer = setTimeout(() => banner.classList.remove('show'), 4600);
-    }
-
-    let _toastTimer;
-    function toast(msg, isErr = false) {
-      const el = document.getElementById('toast');
-      el.textContent = msg;
-      el.className = 'show' + (isErr ? ' err' : '');
-      clearTimeout(_toastTimer);
-      _toastTimer = setTimeout(() => el.className = '', 3500);
-    }
-
-    // ─── INIT ─────────────────────────────────────────────
-    (async () => {
-      const { data: { session } } = await sb.auth.getSession();
-      if (session?.user) {
-        currentUser = session.user;
-        await loadProfile();
-        enterApp();
-      }
-    })();
-  </script>
+  } else { fallbackCopy(text); done(); }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  document.execCommand('copy'); ta.remove();
+}
+
+// ─── ADMIN ───────────────────────────────────────────
+async function openAdmin() {
+  document.getElementById('admin-modal').classList.add('show');
+  await Promise.all([loadAdminUsers(), loadAdminLogs(), loadAdminStats()]);
+}
+function closeAdmin() { document.getElementById('admin-modal').classList.remove('show'); }
+
+async function loadAdminStats() {
+  const [{ count: uc }, { count: mc2 }, { count: lc }] = await Promise.all([
+    sb.from('profiles').select('*', { count: 'exact', head: true }),
+    sb.from('missions').select('*', { count: 'exact', head: true }),
+    sb.from('activity_logs').select('*', { count: 'exact', head: true }),
+  ]);
+  document.getElementById('stat-users').textContent = uc ?? '–';
+  document.getElementById('stat-missions').textContent = mc2 ?? '–';
+  document.getElementById('stat-logs').textContent = lc ?? '–';
+}
+
+async function loadAdminUsers() {
+  const { data } = await sb.from('profiles').select('*').order('created_at', { ascending: false });
+  const tbody = document.getElementById('admin-users-body');
+  tbody.innerHTML = '';
+  (data || []).forEach(u => {
+    const tr = document.createElement('tr');
+    const date = new Date(u.created_at).toLocaleDateString('pt-BR');
+    tr.innerHTML = `<td>${u.name||'—'}</td><td style="color:var(--text3)">${u.email}</td><td><select class="role-select" id="role-sel-${u.id}"><option value="assembler"${u.role==='assembler'?' selected':''}>Montador</option><option value="programmer"${u.role==='programmer'?' selected':''}>Programador</option><option value="admin"${u.role==='admin'?' selected':''}>Admin</option></select></td><td style="color:var(--text3)">${date}</td><td><button class="save-role-btn" onclick="saveUserRole('${u.id}','${u.email}')">Salvar</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+async function saveUserRole(userId, email) {
+  const role = document.getElementById('role-sel-' + userId).value;
+  const { error } = await sb.from('profiles').update({ role }).eq('id', userId);
+  if (error) toast('Erro: ' + error.message, true);
+  else { toast('Função de ' + email + ' → ' + role); logActivity('change_role', userId, 'profile', { role }); }
+}
+
+async function loadAdminLogs() {
+  const { data } = await sb.from('activity_logs').select('*, profiles(name)').order('created_at', { ascending: false }).limit(20);
+  const el = document.getElementById('admin-logs');
+  el.innerHTML = '';
+  (data || []).forEach(l => {
+    const d = document.createElement('div');
+    d.className = 'log-item';
+    const time = new Date(l.created_at).toLocaleString('pt-BR');
+    d.innerHTML = `<span class="log-user">${l.profiles?.name||'?'}</span><span class="log-action">${l.action}${l.target_type?' → '+l.target_type:''}</span><span class="log-time">${time}</span>`;
+    el.appendChild(d);
+  });
+}
+
+// ─── WELCOME + TOAST ─────────────────────────────────
+function showWelcome(name) {
+  const banner = document.getElementById('welcome-banner');
+  const nameEl = document.getElementById('welcome-name');
+  if (!banner || !nameEl) return;
+  nameEl.textContent = name || 'Sharks';
+  banner.classList.add('show');
+  clearTimeout(showWelcome._t);
+  showWelcome._t = setTimeout(() => banner.classList.remove('show'), 4800);
+}
+
+let _toastTimer;
+function toast(msg, isErr = false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (isErr ? ' err' : '');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.className = '', 3500);
+}
+
+// ─── INIT ────────────────────────────────────────────
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) {
+    currentUser = session.user;
+    await loadProfile();
+    enterApp();
+  }
+})();
+</script>
 </body>
-
 </html>
